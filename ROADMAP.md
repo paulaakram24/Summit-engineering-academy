@@ -2,12 +2,12 @@
 
 Each milestone proceeds through implementation, verification, and status recording. A milestone is complete only when its exit check passes. External account dependencies must not stop independent local development. No production readiness claim until live integrations and device tests pass.
 
-## 0. Foundation — active
+## 0. Foundation — locally verified, awaiting push approval
 - [x] 0.1 Inspect repository and preserve existing documents/assets.
-- [ ] 0.2 Verify Flutter/Dart, Android SDK, Java, emulator and CLI tools.
+- [x] 0.2 Verify Flutter/Dart, Android SDK, Java and CLI tools; physical Huawei Android 9 substitutes for the failing emulator.
 - [x] 0.3 Reconcile original requirements with generated planning documents (see REQUIREMENTS_CORRECTIONS.md for open decisions).
-- [ ] 0.4 Create Android/iOS Flutter shell, branding/theme, lint and test setup.
-- [ ] 0.5 Establish automated checks and development configuration.
+- [x] 0.4 Create Android/iOS Flutter shell, branding/theme, lint and test setup (analysis and two widget tests pass; Android build remains the phase exit gate).
+- [x] 0.5 Establish automated checks and development configuration (local checks pass; GitHub-hosted run awaits push approval).
 Exit: shell analyzes cleanly, widget test passes, Android build succeeds.
 
 ## 1. Identity and backend
