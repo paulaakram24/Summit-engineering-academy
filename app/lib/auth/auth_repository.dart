@@ -11,13 +11,32 @@ class AccountProfile {
   final String name;
   final String phone;
   final String university;
-  bool get complete =>
-      name.trim().isNotEmpty &&
-      name.trim().length <= 120 &&
-      phone.trim().isNotEmpty &&
-      phone.trim().length <= 32 &&
-      university.trim().isNotEmpty &&
-      university.trim().length <= 160;
+  static String? validateName(String? value) =>
+      (value ?? '').trim().isEmpty || (value ?? '').trim().length > 120
+      ? 'Use 1–120 characters for your name.'
+      : null;
+
+  static String? validatePhone(String? value) {
+    final phone = (value ?? '').trim();
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    return phone.length <= 32 &&
+            RegExp(r'^\+?[0-9 ()-]+$').hasMatch(phone) &&
+            digits.length >= 7 &&
+            digits.length <= 15
+        ? null
+        : 'Enter a valid phone number with 7–15 digits.';
+  }
+
+  static String? validateUniversity(String? value) =>
+      (value ?? '').trim().isEmpty || (value ?? '').trim().length > 160
+      ? 'Use 1–160 characters for your university.'
+      : null;
+
+  String? get validationMessage =>
+      validateName(name) ??
+      validatePhone(phone) ??
+      validateUniversity(university);
+  bool get complete => validationMessage == null;
   Map<String, dynamic> toJson() => {
     'name': name.trim(),
     'phone': phone.trim(),

@@ -123,6 +123,135 @@ void main() {
     expect(auth.stage, AuthStage.blocked);
     expect(auth.profile, isNull);
   });
+  test(
+    'complete Google user enters without repeating profile completion',
+    () async {
+      await auth.googleSignIn();
+      repo.hasSession = true;
+      repo.emit(SessionEvent.signedIn);
+      await auth.settled;
+      expect(auth.stage, AuthStage.ready);
+      expect(repo.calls, ['google', 'register', 'profile']);
+    },
+  );
+  test(
+    'restored incomplete profile stays gated across refresh and resume',
+    () async {
+      repo.hasSession = true;
+      repo.details = const AccountProfile(
+        name: 'Google User',
+        phone: '',
+        university: 'Summit',
+      );
+      await auth.start();
+      expect(auth.stage, AuthStage.completeProfile);
+      repo.emit(SessionEvent.refreshed);
+      await auth.settled;
+      expect(auth.stage, AuthStage.completeProfile);
+      auth.suspend();
+      await auth.checkAccess();
+      expect(auth.stage, AuthStage.completeProfile);
+      expect(repo.calls, isNot(contains('save')));
+      expect(repo.calls, isNot(contains('register')));
+    },
+  );
+  final invalidProfiles = <String, AccountProfile>{
+    'blank name': const AccountProfile(
+      name: '   ',
+      phone: '+201234567890',
+      university: 'Summit',
+    ),
+    'long name': AccountProfile(
+      name: 'x' * 121,
+      phone: '+201234567890',
+      university: 'Summit',
+    ),
+    for (final phone in [
+      '',
+      'not a phone',
+      '-------',
+      '+( ) -',
+      '12 34 56',
+      '1234567890123456',
+      '123+456789',
+    ])
+      'invalid phone "$phone"': AccountProfile(
+        name: 'Learner',
+        phone: phone,
+        university: 'Summit',
+      ),
+    'blank university': const AccountProfile(
+      name: 'Learner',
+      phone: '+201234567890',
+      university: '   ',
+    ),
+    'long university': AccountProfile(
+      name: 'Learner',
+      phone: '+201234567890',
+      university: 'x' * 161,
+    ),
+  };
+  for (final entry in invalidProfiles.entries) {
+    test(
+      'controller rejects ${entry.key} without saving or losing completion form',
+      () async {
+        repo.hasSession = true;
+        repo.details = const AccountProfile(
+          name: 'Google User',
+          phone: '',
+          university: 'Summit',
+        );
+        await auth.start();
+        final original = auth.profile;
+        repo.calls.clear();
+        await auth.saveProfile(entry.value);
+        expect(repo.calls, isEmpty);
+        expect(auth.stage, AuthStage.completeProfile);
+        expect(auth.profile, same(original));
+        expect(auth.message, entry.value.validationMessage);
+        expect(auth.message, isNotNull);
+        expect(auth.busy, isFalse);
+      },
+    );
+    test('controller rejects ${entry.key} on programmatic signup', () async {
+      await auth.start();
+      await auth.signUp('learner@example.test', 'long-password', entry.value);
+      expect(repo.calls, isEmpty);
+      expect(auth.stage, AuthStage.signedOut);
+      expect(auth.message, isNotNull);
+    });
+  }
+  test('restored malformed phone cannot bypass completion gate', () async {
+    repo.hasSession = true;
+    repo.details = const AccountProfile(
+      name: 'Learner',
+      phone: '-------',
+      university: 'Summit',
+    );
+    await auth.start();
+    expect(auth.stage, AuthStage.completeProfile);
+  });
+  test(
+    'formatted phone and trimmed profile fields can complete profile',
+    () async {
+      repo.hasSession = true;
+      repo.details = const AccountProfile(
+        name: 'Google User',
+        phone: '',
+        university: 'Summit',
+      );
+      await auth.start();
+      await auth.saveProfile(
+        const AccountProfile(
+          name: ' Learner ',
+          phone: ' +20 (123) 456-7890 ',
+          university: ' Summit ',
+        ),
+      );
+      expect(auth.stage, AuthStage.ready);
+      expect(repo.calls, contains('save'));
+    },
+  );
   test('recovery wins over in-flight profile response and refresh', () async {
     repo.hasSession = true;
     repo.profileCompleter = Completer<AccountProfile>();

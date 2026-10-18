@@ -51,15 +51,15 @@ void main() {
         'learner@example.test',
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Name'),
+        find.widgetWithText(TextFormField, 'Name (required)'),
         'x' * 121,
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Phone'),
+        find.widgetWithText(TextFormField, 'Phone (required)'),
         '1' * 33,
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'University'),
+        find.widgetWithText(TextFormField, 'University (required)'),
         'x' * 161,
       );
       await tester.enterText(
@@ -117,7 +117,97 @@ void main() {
     expect(find.byType(DropdownButton<String>), findsNothing);
     await tester.tap(find.text('Edit profile'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextFormField, 'Name'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextFormField, 'Name (required)'),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(TextFormField, 'Email'), findsNothing);
   });
+  testWidgets('Google login requires reviewing and saving mandatory details', (
+    tester,
+  ) async {
+    await tester.runAsync(auth.start);
+    await show(tester);
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    expect(repo.calls, ['google']);
+    repo.details = const AccountProfile(
+      name: 'Google User',
+      phone: '',
+      university: 'Summit',
+    );
+    repo.hasSession = true;
+    await tester.runAsync(() async {
+      repo.emit(SessionEvent.signedIn);
+      await auth.settled;
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Complete your profile'), findsOneWidget);
+    expect(
+      find.textContaining('Review any details filled in from Google'),
+      findsOneWidget,
+    );
+    expect(find.text('Student account'), findsNothing);
+    final name = find.widgetWithText(TextFormField, 'Name (required)');
+    final phone = find.widgetWithText(TextFormField, 'Phone (required)');
+    final university = find.widgetWithText(
+      TextFormField,
+      'University (required)',
+    );
+    expect(tester.widget<TextFormField>(name).controller!.text, 'Google User');
+    expect(university, findsOneWidget);
+    expect(repo.calls, isNot(contains('save')));
+    await tester.ensureVisible(find.text('Save profile'));
+    await tester.tap(find.text('Save profile'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Enter a valid phone number with 7–15 digits.'),
+      findsOneWidget,
+    );
+    expect(repo.calls, isNot(contains('save')));
+
+    await tester.enterText(name, '   ');
+    await tester.enterText(phone, '-------');
+    await tester.enterText(university, '   ');
+    await tester.ensureVisible(find.text('Save profile'));
+    await tester.tap(find.text('Save profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Use 1–120 characters for your name.'), findsOneWidget);
+    expect(
+      find.text('Enter a valid phone number with 7–15 digits.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Use 1–160 characters for your university.'),
+      findsOneWidget,
+    );
+    expect(auth.stage, AuthStage.completeProfile);
+    expect(repo.calls, isNot(contains('save')));
+
+    await tester.enterText(name, 'Reviewed Name');
+    await tester.enterText(phone, '+20 (123) 456-7890');
+    await tester.enterText(university, 'Summit');
+    await tester.ensureVisible(find.text('Save profile'));
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Save profile'));
+      await Future<void>.delayed(Duration.zero);
+      await auth.settled;
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome, Reviewed Name'), findsOneWidget);
+    expect(find.text('Complete your profile'), findsNothing);
+    expect(repo.calls.where((call) => call == 'save'), hasLength(1));
+  });
+  testWidgets(
+    'complete returning user does not see mandatory completion form',
+    (tester) async {
+      repo.hasSession = true;
+      await tester.runAsync(auth.start);
+      await show(tester);
+      expect(find.text('Student account'), findsOneWidget);
+      expect(find.text('Complete your profile'), findsNothing);
+      expect(find.text('Save profile'), findsNothing);
+      expect(repo.calls, isNot(contains('save')));
+    },
+  );
 }

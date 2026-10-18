@@ -135,32 +135,22 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
   );
   List<Widget> _profileFields() => [
     _field(
-      'Name',
+      'Name (required)',
       _name,
       autofill: const [AutofillHints.name],
-      validator: (value) =>
-          (value ?? '').trim().isEmpty || value!.trim().length > 120
-          ? 'Use 1–120 characters for your name.'
-          : null,
+      validator: AccountProfile.validateName,
     ),
     _field(
-      'Phone',
+      'Phone (required)',
       _phone,
       keyboard: TextInputType.phone,
       autofill: const [AutofillHints.telephoneNumber],
-      validator: (value) =>
-          (value ?? '').trim().length <= 32 &&
-              RegExp(r'^\+?[0-9 ()-]{7,32}$').hasMatch((value ?? '').trim())
-          ? null
-          : 'Enter a valid phone number (up to 32 characters).',
+      validator: AccountProfile.validatePhone,
     ),
     _field(
-      'University',
+      'University (required)',
       _university,
-      validator: (value) =>
-          (value ?? '').trim().isEmpty || value!.trim().length > 160
-          ? 'Use 1–160 characters for your university.'
-          : null,
+      validator: AccountProfile.validateUniversity,
     ),
   ];
   Widget _button(
@@ -252,7 +242,11 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
         case AuthStage.completeProfile:
           title = 'Complete your profile';
           children.addAll([
-            const Text('Add your details to continue to your learning space.'),
+            const Text(
+              'Your name, phone number, and university are required before you '
+              'can enter your learning space. Review any details filled in '
+              'from Google, add the missing information, then save your profile.',
+            ),
             const SizedBox(height: 16),
             ..._profileFields(),
             _button('Save profile', () => auth.saveProfile(_details)),
@@ -318,10 +312,28 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
               ),
             );
             children.add(
-              _button(
-                'Continue with Google',
-                auth.googleSignIn,
-                validate: false,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: OutlinedButton.icon(
+                  onPressed: auth.busy ? null : auth.googleSignIn,
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xff1f1f1f),
+                    side: const BorderSide(color: Color(0xff747775)),
+                    minimumSize: const Size(0, 48),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  icon: Image.asset(
+                    'assets/google-g.png',
+                    width: 20,
+                    height: 20,
+                    excludeFromSemantics: true,
+                  ),
+                  label: const Text('Continue with Google'),
+                ),
               ),
             );
             if (_mode == 'login') {

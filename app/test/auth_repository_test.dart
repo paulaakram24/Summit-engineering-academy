@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:summit_academy/auth/auth_repository.dart';
 import 'package:summit_academy/auth/supabase_auth_repository.dart';
+import 'package:summit_academy/auth/secure_auth_storage.dart';
 
 import 'auth_fakes.dart';
 
@@ -100,6 +101,91 @@ void main() {
     await repo.dispose();
     await client.dispose();
   });
+  test(
+    'Google launch uses a fresh SDK-generated S256 URL and secure verifier',
+    () async {
+      final secrets = MemorySecrets();
+      final googleClient = SupabaseClient(
+        'https://example.test',
+        'sb_publishable_test_public',
+        authOptions: AuthClientOptions(
+          autoRefreshToken: false,
+          authFlowType: AuthFlowType.pkce,
+          pkceAsyncStorage: SecurePkceStorage(secrets, 'sea.test'),
+        ),
+      );
+      final launches = <Uri>[];
+      final googleRepo = SupabaseAuthRepository(
+        googleClient,
+        secrets,
+        'sea.test',
+        launchOAuth: (uri) async {
+          launches.add(uri);
+          return true;
+        },
+      );
+      try {
+        await googleRepo.googleSignIn();
+        await googleRepo.googleSignIn();
+        expect(launches, hasLength(2));
+        final query = launches.first.queryParameters;
+        expect(query['redirect_to'], authRedirect);
+        expect(query['provider'], 'google');
+        expect(query['code_challenge_method'], 's256');
+        expect(
+          query['code_challenge'],
+          matches(RegExp(r'^[A-Za-z0-9_-]{43}$')),
+        );
+        expect(query['prompt'], 'select_account');
+        expect(query['scopes'], 'openid email profile');
+        expect(
+          launches.last.queryParameters['code_challenge'],
+          isNot(query['code_challenge']),
+        );
+        expect(
+          secrets.values.keys.any((key) => key.contains('.pkce.')),
+          isTrue,
+        );
+        expect(googleRepo.hasSession, isFalse);
+      } finally {
+        await googleRepo.dispose();
+        await googleClient.dispose();
+      }
+    },
+  );
+  test(
+    'Google launch rejects missing PKCE parameters before opening browser',
+    () async {
+      var opened = false;
+      final implicitClient = SupabaseClient(
+        'https://example.test',
+        'sb_publishable_test_public',
+        authOptions: const AuthClientOptions(
+          autoRefreshToken: false,
+          authFlowType: AuthFlowType.implicit,
+        ),
+      );
+      final invalidRepo = SupabaseAuthRepository(
+        implicitClient,
+        MemorySecrets(),
+        'sea.test',
+        launchOAuth: (_) async {
+          opened = true;
+          return true;
+        },
+      );
+      try {
+        await expectLater(
+          invalidRepo.googleSignIn(),
+          throwsA(isA<AccountFailure>()),
+        );
+        expect(opened, isFalse);
+      } finally {
+        await invalidRepo.dispose();
+        await implicitClient.dispose();
+      }
+    },
+  );
   test(
     'SDK password sign-in is classified as fresh authentication exactly once',
     () async {

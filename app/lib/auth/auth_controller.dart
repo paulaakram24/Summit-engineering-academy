@@ -275,6 +275,10 @@ class AuthController extends ChangeNotifier {
   });
   Future<void> signUp(String email, String password, AccountProfile details) =>
       _action(() async {
+        if (details.validationMessage != null) {
+          message = details.validationMessage;
+          return;
+        }
         _revoked = false;
         _registrationAttempted = false;
         verificationEmail = email.trim();
@@ -348,7 +352,11 @@ class AuthController extends ChangeNotifier {
     }
   });
   Future<void> saveProfile(AccountProfile details) => _action(() async {
-    if (!details.complete || _recovery || _revoked || access == null) {
+    if (details.validationMessage != null) {
+      message = details.validationMessage;
+      return;
+    }
+    if (_recovery || _revoked || access == null) {
       return;
     }
     final epoch = ++_epoch;

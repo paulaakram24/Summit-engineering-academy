@@ -4,13 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_repository.dart';
+import 'oauth_browser_launcher.dart';
 import 'secure_auth_storage.dart';
 
 const authRedirect = 'seaacademy-dev://auth/callback';
 
+typedef OAuthBrowserLauncher = Future<bool> Function(Uri uri);
+
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this.client, this.store, this.namespace)
-    : installation = InstallationSecret(store, namespace) {
+  SupabaseAuthRepository(
+    this.client,
+    this.store,
+    this.namespace, {
+    OAuthBrowserLauncher? launchOAuth,
+  }) : installation = InstallationSecret(store, namespace),
+       _launchOAuth = launchOAuth ?? openOAuthBrowser {
     _subscription = client.auth.onAuthStateChange.listen(
       (state) {
         final event = switch (state.event) {
@@ -39,6 +47,7 @@ class SupabaseAuthRepository implements AuthRepository {
   final SecretStore store;
   final String namespace;
   final InstallationSecret installation;
+  final OAuthBrowserLauncher _launchOAuth;
   final _events = StreamController<SessionEvent>.broadcast(sync: true);
   late final StreamSubscription<AuthState> _subscription;
   bool _interactive = false;
@@ -116,11 +125,28 @@ class SupabaseAuthRepository implements AuthRepository {
   });
   @override
   Future<void> googleSignIn() => _call(() async {
-    final launched = await client.auth.signInWithOAuth(
-      OAuthProvider.google,
+    // The SDK creates and securely persists the verifier. Never hand-build a
+    // PKCE challenge or reuse a browser tab's previous authorization URL.
+    final request = await client.auth.getOAuthSignInUrl(
+      provider: OAuthProvider.google,
       redirectTo: authRedirect,
-      authScreenLaunchMode: LaunchMode.externalApplication,
+      scopes: 'openid email profile',
+      queryParams: const {'prompt': 'select_account'},
     );
+    final uri = Uri.parse(request.url);
+    final query = uri.queryParameters;
+    if (uri.scheme != 'https' ||
+        uri.path != '/auth/v1/authorize' ||
+        query['provider'] != 'google' ||
+        query['redirect_to'] != authRedirect ||
+        query['flow_type'] != 'pkce' ||
+        query['code_challenge_method'] != 's256' ||
+        !RegExp(r'^[A-Za-z0-9_-]{43}$')
+            .hasMatch(query['code_challenge'] ?? '')) {
+      throw const AccountFailure('browser');
+    }
+    // Android Custom Tabs / iOS browser view, never an embedded WebView.
+    final launched = await _launchOAuth(uri);
     if (!launched) {
       throw const AccountFailure('browser');
     }
