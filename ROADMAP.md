@@ -2,19 +2,19 @@
 
 Each milestone proceeds through implementation, verification, and status recording. A milestone is complete only when its exit check passes. External account dependencies must not stop independent local development. No production readiness claim until live integrations and device tests pass.
 
-## 0. Foundation — locally verified, awaiting push approval
+## 0. Foundation — locally verified, pushed and remote CI passed
 - [x] 0.1 Inspect repository and preserve existing documents/assets.
 - [x] 0.2 Verify Flutter/Dart, Android SDK, Java and CLI tools; physical Huawei Android 9 substitutes for the failing emulator.
 - [x] 0.3 Reconcile original requirements with generated planning documents (see REQUIREMENTS_CORRECTIONS.md for open decisions).
 - [x] 0.4 Create Android/iOS Flutter shell, branding/theme, lint and test setup (analysis and two widget tests pass; Android build remains the phase exit gate).
-- [x] 0.5 Establish automated checks and development configuration (local checks pass; GitHub-hosted run awaits push approval).
+- [x] 0.5 Establish automated checks and development configuration (local checks and GitHub-hosted run 38745284449 passed).
 Exit: shell analyzes cleanly, widget test passes, Android build succeeds.
 
-## 1. Identity and backend
-- [ ] 1.1 Create development Supabase project; record configuration without secrets.
-- [ ] 1.2 Design migrations, ownership, roles, RLS and private storage.
+## 1. Identity and backend — started
+- [x] 1.1 Create development Supabase project; record configuration without secrets (summit-academy-dev verified ACTIVE_HEALTHY in Frankfurt).
+- [x] 1.2 Design migrations, ownership, roles, RLS and private storage (deployed to dev; initial 78 database assertions passed).
 - [ ] 1.3 Registration, email verification, login, reset, Google sign-in and profile.
-- [ ] 1.4 Server-authorized admin provisioning, two-device registration and session replacement.
+- [ ] 1.4 Server-authorized admin provisioning and two-device registration. Owner confirmed blocking new login until current session logs out, not session replacement. Controls implemented; verified owner account provisioning and device acceptance pending.
 - [ ] 1.5 Test cross-user access denial, role escalation and revoked sessions.
 Exit: student/admin authentication works and unauthorized access fails in integration tests.
 

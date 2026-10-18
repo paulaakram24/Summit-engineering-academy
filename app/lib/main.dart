@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const SummitApp());
+import 'auth/auth_bootstrap.dart';
+import 'auth/auth_controller.dart';
+import 'auth/auth_panel.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const config = AuthBuildConfig();
+  if (config.absent) {
+    runApp(const SummitApp());
+    return;
+  }
+  try {
+    final runtime = await initializeAuth(config)
+        .timeout(const Duration(seconds: 30));
+    runApp(SummitApp(authController: runtime.controller));
+  } catch (_) {
+    runApp(const SummitApp(initializationFailed: true));
+  }
+}
 
 class SummitApp extends StatefulWidget {
-  const SummitApp({super.key});
+  const SummitApp({
+    super.key,
+    this.authController,
+    this.initializationFailed = false,
+  });
+  final AuthController? authController;
+  final bool initializationFailed;
   @override
   State<SummitApp> createState() => _SummitAppState();
 }
@@ -72,14 +96,19 @@ class _SummitAppState extends State<SummitApp> {
                       'Your engineering courses, sessions and assignments — together in one place.',
                     ),
                     const SizedBox(height: 24),
-                    const Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'We are preparing your learning space. Account access is coming next.',
+                    if (widget.authController != null)
+                      AuthPanel(controller: widget.authController!)
+                    else
+                      Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            widget.initializationFailed
+                                ? 'Account access could not start securely. Check app configuration and restart.'
+                                : 'We are preparing your learning space. Account access is coming next.',
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

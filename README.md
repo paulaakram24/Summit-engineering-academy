@@ -19,6 +19,31 @@ The supplied official logo is stored at `assets/sea-logo.png`. Use it as the pri
 
 ## Local setup
 
+Phase 1 development backend is deployed; live OAuth/email acceptance is still pending. See `ROADMAP.md` and `PROJECT_STATUS.md` for evidence rather than treating planned features below as complete.
+
+From `app/`, use the pinned Flutter SDK and run:
+
+```powershell
+flutter pub get --enforce-lockfile
+flutter analyze
+flutter test
+flutter run --dart-define-from-file=config/development.json
+```
+
+The development JSON contains only a public URL and publishable key. Never add server secrets to it. Without these build defines the app deliberately shows the unconfigured foundation screen. Configuration errors fail closed.
+
+On the current Windows development PC, the verified configured build/check command from the repository root is:
+
+```powershell
+./scripts/check.ps1 -Flutter 'C:/src/flutter/bin/flutter.bat' -BuildAndroid -DartDefineFile config/development.json -GradleUserHome 'E:/Android-prerequisites-Summit/gradle-physical' -JavaHome 'C:/Program Files/Microsoft/jdk-17.0.20.101-hotspot'
+```
+
+These machine-specific paths are command arguments, not global settings. The script restores its environment after completion. Use ordinary physical directories for the Gradle cache on this pinned Gradle 9.3.1 Windows setup: linked cache paths caused Kotlin DSL failures consistent with [Gradle issue 36483](https://github.com/gradle/gradle/issues/36483). Tests, analysis, configured APK build, and emulator installation passed on 2026-10-18. See PROJECT_STATUS.md for remaining live-auth and physical-device checks.
+
+Backend migrations are under `supabase/migrations/`; hosted dev migration versions match local filenames. The owner connected Supabase to GitHub; inspect that integration before any push/deployment, and do not create paid branches. SQL regression instructions are in `docs/PHASE1_DATABASE_TESTS.md`; execute the entire rollback-based suite, not fragments. The new backend CI workflow runs against a disposable local backend, not hosted dev, and awaits its first approved push/run.
+
+Owner setup: `docs/GOOGLE_SIGN_IN_SETUP.md` and `docs/PHASE1_PLATFORM_CHECKLIST.md`. Architecture and access controls: `docs/PHASE1_BACKEND.md`. Administrator provisioning is deliberately server-only and requires the owner to register/verify first.
+
 Verified local toolchain: Flutter 3.47.7 and Dart 3.13.5 at C:/src/flutter. Application source is in app/. Run flutter pub get, flutter analyze, flutter test, and flutter run from app/. Required environment variables must be listed in .env.example when integrations are added; secrets must never be committed.
 
 Expected setup sequence:
