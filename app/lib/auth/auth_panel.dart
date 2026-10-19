@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../content/content_repository.dart';
 import '../content/admin_content_screen.dart';
 import '../content/course_image_selector.dart';
+import '../content/material_repository.dart';
 
 import 'auth_controller.dart';
 import 'auth_repository.dart';
@@ -14,9 +15,11 @@ class AuthPanel extends StatefulWidget {
     super.key,
     required this.controller,
     this.contentRepository,
+    this.materialRepository,
   });
   final AuthController controller;
   final ContentRepository? contentRepository;
+  final MaterialRepository? materialRepository;
   @override
   State<AuthPanel> createState() => _AuthPanelState();
 }
@@ -298,6 +301,7 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
                               builder: (_) => AdminContentScreen(
                                 repository: widget.contentRepository!,
                                 authController: auth,
+                                materialRepository: widget.materialRepository,
                               ),
                             ),
                           );

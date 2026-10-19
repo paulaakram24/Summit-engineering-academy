@@ -5,6 +5,8 @@ import 'content_repository.dart';
 import 'course_cover_actions.dart';
 import 'course_cover_panel.dart';
 import 'course_image_selector.dart';
+import 'material_repository.dart';
+import 'admin_materials_panel.dart';
 
 bool _canManage(AuthController auth) =>
     auth.stage == AuthStage.ready && auth.access?.role == 'admin';
@@ -16,11 +18,13 @@ class AdminContentScreen extends StatefulWidget {
     required this.authController,
     this.coverActions,
     this.imageSelector,
+    this.materialRepository,
   });
   final ContentRepository repository;
   final AuthController authController;
   final CourseCoverActions? coverActions;
   final CourseImageSelector? imageSelector;
+  final MaterialRepository? materialRepository;
   @override
   State<AdminContentScreen> createState() => _AdminContentScreenState();
 }
@@ -51,6 +55,9 @@ class _AdminContentScreenState extends State<AdminContentScreen> {
         oldWidget.imageSelector != widget.imageSelector) {
       _workspaceKey = UniqueKey();
     }
+    if (oldWidget.materialRepository != widget.materialRepository) {
+      _workspaceKey = UniqueKey();
+    }
   }
 
   @override
@@ -72,6 +79,7 @@ class _AdminContentScreenState extends State<AdminContentScreen> {
               auth: widget.authController,
               coverActions: widget.coverActions,
               imageSelector: widget.imageSelector,
+              materialRepository: widget.materialRepository,
             ),
     ),
   );
@@ -84,11 +92,13 @@ class _AdminWorkspace extends StatefulWidget {
     required this.auth,
     this.coverActions,
     this.imageSelector,
+    this.materialRepository,
   });
   final ContentRepository repository;
   final AuthController auth;
   final CourseCoverActions? coverActions;
   final CourseImageSelector? imageSelector;
+  final MaterialRepository? materialRepository;
   @override
   State<_AdminWorkspace> createState() => _AdminWorkspaceState();
 }
@@ -98,6 +108,7 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
   List<CourseSession> _sessions = [];
   Course? _course;
   Course? _coverCourse;
+  CourseSession? _materialSession;
   bool _includeDeleted = false, _busy = false, _hasNext = false;
   bool _confirming = false;
   int _offset = 0, _epoch = 0;
@@ -120,6 +131,7 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
       _sessions = [];
       _course = null;
       _coverCourse = null;
+      _materialSession = null;
       _editingCourse = null;
       _editingSession = null;
       _editing = false;
@@ -323,6 +335,21 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
 
   @override
   Widget build(BuildContext context) {
+    if (_materialSession != null &&
+        _course != null &&
+        widget.materialRepository != null) {
+      return AdminMaterialsPanel(
+        key: ValueKey(_materialSession!.id),
+        course: _course!,
+        session: _materialSession!,
+        auth: widget.auth,
+        repository: widget.materialRepository!,
+        onClose: () {
+          setState(() => _materialSession = null);
+          _load();
+        },
+      );
+    }
     if (_coverCourse != null) {
       return CourseCoverPanel(
         key: ValueKey(_coverCourse!.id),
@@ -532,6 +559,14 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
                           : () => _edit(session: session),
                       child: const Text('Edit session'),
                     ),
+                    if (widget.materialRepository != null)
+                      TextButton(
+                        onPressed:
+                            _busy || session.isDeleted || _course!.isDeleted
+                            ? null
+                            : () => setState(() => _materialSession = session),
+                        child: const Text('Materials'),
+                      ),
                     TextButton(
                       onPressed: _busy
                           ? null

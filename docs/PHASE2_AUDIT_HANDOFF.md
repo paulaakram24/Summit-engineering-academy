@@ -4,14 +4,14 @@ Prepared 2026-10-19. This is an audit request, **not an executed Claude Code aud
 
 ## Review scope and baseline
 
-Read ROADMAP.md, REQUIREMENTS_CORRECTIONS.md, docs/CONTENT_CONTRACT.md, docs/COURSE_COVER_DESIGN.md, docs/PHASE2_COVERS.md and docs/PHASE2_DEVICE_ACCEPTANCE.md. Compare the working tree against last pushed checkpoint `2e08f0ff1a98e7e2b646d699bac945bffe5e8d88`, including **untracked files**, not just Git's tracked diff. Do not edit, commit, push, publish content, alter accounts/roles or mutate a hosted database during review.
+Read ROADMAP.md, REQUIREMENTS_CORRECTIONS.md, docs/CONTENT_CONTRACT.md, docs/COURSE_COVER_DESIGN.md, docs/PHASE2_COVERS.md, docs/ADMIN_MATERIAL_EDITOR.md and docs/PHASE2_DEVICE_ACCEPTANCE.md. Latest pushed checkpoint is `5fa6d4ac3ec216b8d77b13944fbe8f12c0bf807d`; inspect its foundation and the subsequent working tree, including **untracked files**, not just Git's tracked diff. Current material editor is unpushed. Do not edit, commit, push, publish content, alter accounts/roles or mutate a hosted database during review.
 
 Key implementation paths:
 
 - `app/lib/content/`: models, authenticated metadata repository, administrator workspace/lifecycle, cover service, selector and private preview controls.
 - `app/lib/auth/auth_panel.dart` and `app/lib/main.dart`: role-gated entry and application lifecycle integration.
 - `supabase/migrations/20261018154932_phase2_content_core.sql` and `20261019015308_phase2_private_covers.sql`.
-- New admin-only material migration `20261019154009_phase2_admin_materials.sql`, `supabase/tests/phase2_materials.sql`, `docs/PHASE2_MATERIALS.md` and client `*material*` models/repository/tests. Review originating-actor request binding, exact retry behavior, stale revisions and safe metadata versus protected payloads; no material UI or student delivery exists yet.
+- Admin-only material migration `20261019154009_phase2_admin_materials.sql`, `supabase/tests/phase2_materials.sql`, `docs/PHASE2_MATERIALS.md`, `app/lib/content/admin_materials_panel.dart` and client `*material*` models/repository/tests. Review originating-actor request binding, exact retry behavior, stale revisions and safe metadata versus protected payloads; material authoring UI now exists, but no student delivery. Verify access/lifecycle clearing of editors and dialogs, refetch after cached success, refresh-only uncertain recovery and conflict fields that remain copyable but unsavable.
 - `supabase/tests/phase1_identity.sql`, `phase2_content.sql`, `phase2_covers.sql`, plus `app/test/*content*`, `*cover*` and `admin_entrypoint_test.dart`.
 - `.github/workflows/backend-checks.yml`, dependency manifest/lockfile and iOS picker purpose string, if included in the current tree.
 

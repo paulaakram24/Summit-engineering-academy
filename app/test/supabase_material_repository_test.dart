@@ -110,6 +110,33 @@ void main() {
     }
   }
 
+  test(
+    'currentActorId reads live identity without network and clears on sign-out',
+    () async {
+      expect(repository.currentActorId, actorId);
+      expect(requests, isEmpty);
+      await signInAs(otherId);
+      expect(repository.currentActorId, otherId);
+      expect(requests, isEmpty);
+      await client.auth.signOut(scope: SignOutScope.local);
+      final count = requests.length;
+      expect(repository.currentActorId, isNull);
+      expect(requests, hasLength(count));
+    },
+  );
+  test('currentActorId fails safely for a custom-token client without GoTrue identity', () async {
+    final tokenClient = SupabaseClient(
+      'https://example.test',
+      'sb_publishable_test',
+      accessToken: () async => 'synthetic-token',
+      httpClient: MockClient((request) async {
+        fail('The identity getter must not make a network request');
+      }),
+    );
+    addTearDown(tokenClient.dispose);
+    expect(SupabaseMaterialRepository(tokenClient).currentActorId, isNull);
+  });
+
   Map<String, dynamic> mutationRow(String action) => materialRow(
     revision: action == 'create' ? 1 : 2,
     deleted: action == 'delete',

@@ -10,6 +10,15 @@ class SupabaseMaterialRepository implements MaterialRepository {
   final SupabaseClient client;
   final Duration timeout;
 
+  @override
+  String? get currentActorId {
+    try {
+      return client.auth.currentUser?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _input(bool valid) {
     if (!valid) throw const MaterialFailure(MaterialFailureKind.invalidInput);
   }

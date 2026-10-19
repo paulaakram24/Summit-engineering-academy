@@ -41,6 +41,7 @@ final class MaterialLifecycleRequest {
 /// Admin authoring only. Server role/admission checks remain authoritative.
 /// There are no asset, student, delivery, signing or URL-launch operations here.
 abstract class MaterialRepository {
+  String? get currentActorId;
   Future<List<MaterialDescriptor>> listMaterials(
     String sessionId, {
     int offset = 0,

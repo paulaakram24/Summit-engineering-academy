@@ -5,6 +5,8 @@ import 'auth/auth_controller.dart';
 import 'auth/auth_panel.dart';
 import 'content/content_repository.dart';
 import 'content/supabase_content_repository.dart';
+import 'content/material_repository.dart';
+import 'content/supabase_material_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,9 @@ Future<void> main() async {
       SummitApp(
         authController: runtime.controller,
         contentRepository: SupabaseContentRepository(runtime.repository.client),
+        materialRepository: SupabaseMaterialRepository(
+          runtime.repository.client,
+        ),
       ),
     );
   } catch (_) {
@@ -32,10 +37,12 @@ class SummitApp extends StatefulWidget {
     super.key,
     this.authController,
     this.contentRepository,
+    this.materialRepository,
     this.initializationFailed = false,
   });
   final AuthController? authController;
   final ContentRepository? contentRepository;
+  final MaterialRepository? materialRepository;
   final bool initializationFailed;
   @override
   State<SummitApp> createState() => _SummitAppState();
@@ -109,6 +116,7 @@ class _SummitAppState extends State<SummitApp> {
                       AuthPanel(
                         controller: widget.authController!,
                         contentRepository: widget.contentRepository,
+                        materialRepository: widget.materialRepository,
                       )
                     else
                       Card(

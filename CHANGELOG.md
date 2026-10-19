@@ -4,6 +4,10 @@ All notable changes to Summit Engineering Academy are recorded here. Dates use `
 
 ## Unreleased
 
+### Verified follow-up
+- 2026-10-19: Administrator per-session material editor with draft assignment/link/media-placeholder authoring, private detail loading, recoverable delete/restore, identity/lifecycle invalidation, unsaved-change guards and conservative uncertain-save refresh recovery. All 355 app tests, analysis/format and Android debug build passed; controlled Huawei assignment/link/placeholder persistence and lifecycle accepted. Temporary parent soft-deleted/recoverable, no publication or student media delivery. This UI increment remains unpushed pending fresh approval.
+- 2026-10-19: Approved foundation checkpoint pushed as 5fa6d4a; remote Flutter and Backend workflows both passed. Those checks precede the separate material UI increment.
+
 ### Fixed
 - 2026-10-19: Retained material mutations are bound to the originating authenticated actor and use a pinned request token with identity revalidation. Cross-account/signed-out retries fail safely, while exact same-actor retries remain supported. Added 25 regressions (105 material tests; all 310 app tests), clean analysis/formatting and Android build passed. Material editor UI remains pending.
 - 2026-10-18: Owner completed fresh Google sign-in on Huawei, returned to SEA's mandatory profile form and saved successfully; direct device inspection confirmed the personalized welcome screen. Restart/logout and broader Phase 1 acceptance checks remain pending.
