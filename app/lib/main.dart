@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'auth/auth_bootstrap.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_panel.dart';
+import 'content/content_repository.dart';
+import 'content/supabase_content_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +16,12 @@ Future<void> main() async {
   try {
     final runtime = await initializeAuth(config)
         .timeout(const Duration(seconds: 30));
-    runApp(SummitApp(authController: runtime.controller));
+    runApp(
+      SummitApp(
+        authController: runtime.controller,
+        contentRepository: SupabaseContentRepository(runtime.repository.client),
+      ),
+    );
   } catch (_) {
     runApp(const SummitApp(initializationFailed: true));
   }
@@ -24,9 +31,11 @@ class SummitApp extends StatefulWidget {
   const SummitApp({
     super.key,
     this.authController,
+    this.contentRepository,
     this.initializationFailed = false,
   });
   final AuthController? authController;
+  final ContentRepository? contentRepository;
   final bool initializationFailed;
   @override
   State<SummitApp> createState() => _SummitAppState();
@@ -97,7 +106,10 @@ class _SummitAppState extends State<SummitApp> {
                     ),
                     const SizedBox(height: 24),
                     if (widget.authController != null)
-                      AuthPanel(controller: widget.authController!)
+                      AuthPanel(
+                        controller: widget.authController!,
+                        contentRepository: widget.contentRepository,
+                      )
                     else
                       Card(
                         child: Padding(

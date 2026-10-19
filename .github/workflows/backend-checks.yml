@@ -22,6 +22,12 @@ jobs:
         run: npx --yes supabase@2.121.0 start
       - name: Test ownership, roles, sessions and private storage
         run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase1_identity.sql
+      - name: Test course/session metadata and admin access
+        run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_content.sql
+      - name: Test private course covers and retirement rules
+        run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_covers.sql
+      - name: Test admin material authoring and protected payload separation
+        run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_materials.sql
       - name: Stop this runner's disposable backend
         if: always()
         run: npx --yes supabase@2.121.0 stop --project-id Summit-engineering-academy --no-backup

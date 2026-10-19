@@ -208,7 +208,7 @@ SELECT pg_temp.expect_error('deleted registered session register', $test$SELECT 
 SELECT pg_temp.check_true('deleted session profile denied', $test$SELECT count(*)=0 FROM (SELECT * FROM public.profiles WHERE id='f1a5e100-0000-4000-8000-000000000001') denied$test$);
 RESET ROLE;
 SELECT pg_temp.check_true('storage objects RLS enabled', $test$SELECT relrowsecurity FROM pg_class WHERE oid='storage.objects'::regclass$test$);
-SELECT pg_temp.check_true('phase1 storage has no object policies', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects'$test$);
+SELECT pg_temp.check_true('phase1 storage allows only named cover policies', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete')$test$);
 SELECT pg_temp.check_true('all three buckets private', $test$SELECT count(*)=3 AND bool_and(NOT public) FROM storage.buckets WHERE id IN ('course-materials','payment-receipts','assignment-submissions')$test$);
 INSERT INTO storage.objects (bucket_id,name) VALUES ('course-materials','phase1-regression/fictional-fixture.txt');
 INSERT INTO storage.objects (bucket_id,name) VALUES ('payment-receipts','phase1-regression/fictional-fixture.txt');

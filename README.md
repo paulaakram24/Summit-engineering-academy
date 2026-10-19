@@ -10,7 +10,7 @@ Summit Engineering Academy is a mobile learning app where students browse course
 - Supabase Auth and PostgreSQL
 - Supabase Storage for controlled files and payment receipts
 - Supabase Edge Functions for privileged workflows
-- Mux or Cloudflare Stream for private video playback
+- Cloudflare Stream for private video playback (selected; integration pending)
 - Firebase Cloud Messaging/APNs through a Flutter push-notification package
 
 ## Brand asset
@@ -19,7 +19,7 @@ The supplied official logo is stored at `assets/sea-logo.png`. Use it as the pri
 
 ## Local setup
 
-Phase 1 development backend is deployed. Google sign-in, mandatory profile save, first-admin provisioning and session restoration after app restart are verified on Huawei. Email delivery/recovery and remaining device/logout checks are still pending. Course features below remain planned. `ROADMAP.md` is the canonical phase sequence; `PROJECT_STATUS.md` records evidence.
+Development backend is deployed. Google sign-in, mandatory profile save, first-admin provisioning and session restoration after app restart are verified on Huawei. **Manage courses** provides administrator course/session lists, create/edit, exact EGP prices, ordering and recoverable delete/restore with confirmation. Administrator lifecycle and private course-cover selection/readback/replacement/removal/cleanup were accepted on Huawei using an owner-approved temporary draft on 2026-10-19; it was never published and is now soft-deleted/recoverable. Server authorization and audit remain mandatory; restore returns to draft. See `docs/PHASE2_DEVICE_ACCEPTANCE.md`; student-side, iOS and signed release-artifact acceptance remain open. Materials, student catalog, purchases and playback remain unfinished. Email delivery/recovery and remaining identity acceptance also stay open. `ROADMAP.md` is the canonical phase sequence; `PROJECT_STATUS.md` records evidence.
 
 From `app/`, use the pinned Flutter SDK and run:
 
@@ -43,6 +43,12 @@ These machine-specific paths are command arguments, not global settings. The scr
 Backend migrations are under `supabase/migrations/`; hosted dev migration versions match local filenames. The owner connected Supabase to GitHub; inspect that integration before any push/deployment, and do not create paid branches. SQL regression instructions are in `docs/PHASE1_DATABASE_TESTS.md`; execute the entire rollback-based suite, not fragments. Backend CI passed on checkpoint `975bf67` using a disposable local backend. The hosted development suite passed 84/84 again on 2026-10-18 after administrator provisioning; follow-up changes remain local and require fresh push approval.
 
 Owner setup: `docs/GOOGLE_SIGN_IN_SETUP.md` and `docs/PHASE1_PLATFORM_CHECKLIST.md`. Architecture and access controls: `docs/PHASE1_BACKEND.md`. Administrator provisioning is deliberately server-only and requires the owner to register/verify first.
+
+Content contracts and upload boundaries: `docs/CONTENT_CONTRACT.md`. Content denial/constraint tests: `docs/PHASE2_DATABASE_TESTS.md` and `supabase/tests/phase2_content.sql`. Development migration `20261018154932_phase2_content_core` matches hosted history. The expanded backend workflow runs both identity and content suites after the next approved push; hosted execution of this new workflow is not yet verified.
+
+Private covers (2026-10-19): see `docs/COURSE_COVER_DESIGN.md` and deployed migration `20261019015308_phase2_private_covers`. Picker/private preview UI and administrator real binary workflow are accepted on Huawei; both temporary uploads were cleaned through Storage API and the original logo retained. Historical cover/content/identity database suites passed 267 assertions. Latest app analysis, all 310 tests, formatting and configured Android build pass, including 105 admin-material client checks after actor-bound retry correction. The workflow additionally runs `supabase/tests/phase2_covers.sql`. Follow-up changes remain unpushed pending fresh approval. Approved student-discovery/library improvements are specified in `docs/STUDENT_EXPERIENCE.md`, not yet implemented.
+
+Admin materials backend (2026-10-19): migration `20261019154009_phase2_admin_materials.sql` is deployed to development; main verified 163 material assertions and the 267 existing regressions (430 total), with fixture cleanup confirmed. The backend workflow includes `supabase/tests/phase2_materials.sql`; hosted CI requires an approved push. Actor-bound client retries are verified; material editor UI acceptance remains open. See `docs/PHASE2_MATERIALS.md`; this does not enable student file/video access.
 
 Verified local toolchain: Flutter 3.47.7 and Dart 3.13.5 at C:/src/flutter. Application source is in app/. Run flutter pub get, flutter analyze, flutter test, and flutter run from app/. Required environment variables must be listed in .env.example when integrations are added; secrets must never be committed.
 

@@ -2,12 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../content/content_repository.dart';
+import '../content/admin_content_screen.dart';
+import '../content/course_image_selector.dart';
+
 import 'auth_controller.dart';
 import 'auth_repository.dart';
 
 class AuthPanel extends StatefulWidget {
-  const AuthPanel({super.key, required this.controller});
+  const AuthPanel({
+    super.key,
+    required this.controller,
+    this.contentRepository,
+  });
   final AuthController controller;
+  final ContentRepository? contentRepository;
   @override
   State<AuthPanel> createState() => _AuthPanelState();
 }
@@ -33,6 +42,7 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (CourseImageSelection.active(auth)) return;
     if (state == AppLifecycleState.resumed) {
       unawaited(auth.checkAccess());
     } else {
@@ -277,6 +287,24 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
               Text(auth.profile!.university),
               const SizedBox(height: 12),
               const Text('Your learning space is ready for the next phase.'),
+              if (auth.access!.role == 'admin' &&
+                  widget.contentRepository != null)
+                FilledButton.icon(
+                  onPressed: auth.busy
+                      ? null
+                      : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => AdminContentScreen(
+                                repository: widget.contentRepository!,
+                                authController: auth,
+                              ),
+                            ),
+                          );
+                        },
+                  icon: const Icon(Icons.library_books),
+                  label: const Text('Manage courses'),
+                ),
               TextButton(
                 onPressed: () => setState(() {
                   _loadProfile();
