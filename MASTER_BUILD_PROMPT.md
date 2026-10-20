@@ -40,7 +40,7 @@ Implement:
 - Mux or Cloudflare Stream private playback tokens.
 - Watermark overlays or watermark metadata using student identity where technically supported.
 - Download disabled by default; per-file configuration only when explicitly enabled.
-- Two registered devices per account, device revocation, refresh-token/session invalidation, and simultaneous-login protection.
+- Students: two registered devices and one active application session; block new admission until current logout. Enabled server-authorized admins: unlimited registered devices and simultaneous sessions. Retain revocation, session validity, disablement and current-role checks for both roles; ordinary logout ends only its own session.
 - Rate limits for login, receipt submission, access-token generation, and admin-sensitive actions.
 - Input validation, safe file type/size limits, malware-scanning integration point, secure logging, and no secrets in the client bundle.
 - Audit logs for admin authentication, content changes, prices, payment decisions, access grants/revocations, device changes, and role changes.

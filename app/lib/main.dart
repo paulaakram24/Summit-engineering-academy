@@ -7,6 +7,10 @@ import 'content/content_repository.dart';
 import 'content/supabase_content_repository.dart';
 import 'content/material_repository.dart';
 import 'content/supabase_material_repository.dart';
+import 'catalog/catalog_repository.dart';
+import 'catalog/supabase_catalog_repository.dart';
+import 'catalog/catalog_screen.dart';
+import 'content/course_covers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,12 +22,28 @@ Future<void> main() async {
   try {
     final runtime = await initializeAuth(config)
         .timeout(const Duration(seconds: 30));
+    final coverService = CourseCoverService(runtime.repository.client);
     runApp(
       SummitApp(
         authController: runtime.controller,
         contentRepository: SupabaseContentRepository(runtime.repository.client),
         materialRepository: SupabaseMaterialRepository(
           runtime.repository.client,
+        ),
+        catalogRepository: SupabaseCatalogRepository(runtime.repository.client),
+        catalogCoverLoader: (course) => coverService.downloadCover(
+          Course(
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            instructor: course.instructor,
+            category: course.category,
+            level: course.level,
+            pricePiasters: course.pricePiasters,
+            position: course.position,
+            status: ContentStatus.published,
+            coverPath: course.coverPath,
+          ),
         ),
       ),
     );
@@ -38,11 +58,15 @@ class SummitApp extends StatefulWidget {
     this.authController,
     this.contentRepository,
     this.materialRepository,
+    this.catalogRepository,
+    this.catalogCoverLoader,
     this.initializationFailed = false,
   });
   final AuthController? authController;
   final ContentRepository? contentRepository;
   final MaterialRepository? materialRepository;
+  final CatalogRepository? catalogRepository;
+  final CatalogCoverLoader? catalogCoverLoader;
   final bool initializationFailed;
   @override
   State<SummitApp> createState() => _SummitAppState();
@@ -117,6 +141,8 @@ class _SummitAppState extends State<SummitApp> {
                         controller: widget.authController!,
                         contentRepository: widget.contentRepository,
                         materialRepository: widget.materialRepository,
+                        catalogRepository: widget.catalogRepository,
+                        catalogCoverLoader: widget.catalogCoverLoader,
                       )
                     else
                       Card(

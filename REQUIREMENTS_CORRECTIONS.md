@@ -7,6 +7,7 @@ These corrections take precedence over omissions in earlier generated planning d
 - Individual-session purchase does not create course enrollment. Course purchase includes future sessions while its grant remains valid.
 - Support manual completion separately from 90% watched completion; do not display course completion counts by default (original Q41).
 - Google sign-in is required alongside email/password.
+- Owner clarified 2026-10-20: enabled, server-authorized administrators may register unlimited installations and keep simultaneous sessions. Students retain two registered installations and one active application session: block a new login until the existing session logs out. Admin exemption never bypasses verified authentication, device revocation, ended sessions, account disablement or server-controlled roles. Ordinary logout affects only its own session, not other admin installations. This supersedes earlier per-account device/session wording.
 - PDFs are view-only; other attachment downloads follow explicit file permissions.
 - No fixed business cap on sessions; paginate large courses. Include course category, level/year, instructor, image, description and price; include session numbering.
 - Include Recent Materials, material search, total/active students, revenue, sales by course/session, most-watched courses, video completion and registrations. Target 100–1,000 students.

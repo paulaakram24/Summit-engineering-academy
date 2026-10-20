@@ -6,6 +6,8 @@ import '../content/content_repository.dart';
 import '../content/admin_content_screen.dart';
 import '../content/course_image_selector.dart';
 import '../content/material_repository.dart';
+import '../catalog/catalog_repository.dart';
+import '../catalog/catalog_screen.dart';
 
 import 'auth_controller.dart';
 import 'auth_repository.dart';
@@ -16,10 +18,14 @@ class AuthPanel extends StatefulWidget {
     required this.controller,
     this.contentRepository,
     this.materialRepository,
+    this.catalogRepository,
+    this.catalogCoverLoader,
   });
   final AuthController controller;
   final ContentRepository? contentRepository;
   final MaterialRepository? materialRepository;
+  final CatalogRepository? catalogRepository;
+  final CatalogCoverLoader? catalogCoverLoader;
   @override
   State<AuthPanel> createState() => _AuthPanelState();
 }
@@ -290,6 +296,22 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
               Text(auth.profile!.university),
               const SizedBox(height: 12),
               const Text('Your learning space is ready for the next phase.'),
+              if (widget.catalogRepository != null)
+                FilledButton.icon(
+                  onPressed: auth.busy
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => CatalogScreen(
+                              auth: auth,
+                              repository: widget.catalogRepository!,
+                              loadCover: widget.catalogCoverLoader,
+                            ),
+                          ),
+                        ),
+                  icon: const Icon(Icons.explore_outlined),
+                  label: const Text('Browse courses'),
+                ),
               if (auth.access!.role == 'admin' &&
                   widget.contentRepository != null)
                 FilledButton.icon(

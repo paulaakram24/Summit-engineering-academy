@@ -4,9 +4,11 @@ Prepared 2026-10-19. This is an audit request, **not an executed Claude Code aud
 
 ## Review scope and baseline
 
-Read ROADMAP.md, REQUIREMENTS_CORRECTIONS.md, docs/CONTENT_CONTRACT.md, docs/COURSE_COVER_DESIGN.md, docs/PHASE2_COVERS.md, docs/ADMIN_MATERIAL_EDITOR.md and docs/PHASE2_DEVICE_ACCEPTANCE.md. Latest pushed checkpoint is `5fa6d4ac3ec216b8d77b13944fbe8f12c0bf807d`; inspect its foundation and the subsequent working tree, including **untracked files**, not just Git's tracked diff. Current material editor is unpushed. Do not edit, commit, push, publish content, alter accounts/roles or mutate a hosted database during review.
+Read ROADMAP.md, REQUIREMENTS_CORRECTIONS.md, docs/CONTENT_CONTRACT.md, docs/COURSE_COVER_DESIGN.md, docs/PHASE2_COVERS.md, docs/ADMIN_MATERIAL_EDITOR.md, docs/CATALOG_IMPLEMENTATION.md, docs/CATALOG_DATABASE_TESTS.md and docs/PHASE2_DEVICE_ACCEPTANCE.md. Latest pushed checkpoint is `f79f359d081071977542d99f573556bc3ab3c27a`; inspect its foundation and the subsequent working tree, including **untracked files**, not just Git's tracked diff. Material editor is pushed; catalog follow-up is unpushed. Do not edit, commit, push, publish content, alter accounts/roles or mutate a hosted database during review.
 
 Key implementation paths:
+
+- `app/lib/catalog/`, `app/test/*catalog*`, `supabase/migrations/20261019193939_phase2_catalog.sql` and `supabase/tests/phase2_catalog.sql`: published-only invoker RPCs, literal search before cursor pagination, full-catalog filter choices, exact safe projections, pinned actor identity and parent visibility. Check that no admin draft branch or image-cover exception grants protected material access. Trace delayed query/detail/image results after criteria/account/lifecycle changes, denied paging, duplicate/nonadvancing cursors and separate detail/list scroll state.
 
 - `app/lib/content/`: models, authenticated metadata repository, administrator workspace/lifecycle, cover service, selector and private preview controls.
 - `app/lib/auth/auth_panel.dart` and `app/lib/main.dart`: role-gated entry and application lifecycle integration.
@@ -28,6 +30,10 @@ Key implementation paths:
 9. Are native permissions/purpose strings minimal and dependencies pinned/locked? Check small-screen, large-font, keyboard, loading/error/cancel behavior and process death. Do not claim iOS acceptance from source inspection.
 
 ## Evidence and limits
+
+Later local withdrawal follow-up: a reproduced failing regression proved Back restored a card after unavailable detail. Main invalidated the cached catalog/cursor and required fresh search; independent bounded reinspection found no remaining concrete issue. Main passed 466 app tests, clean analysis/49-file formatting and Android rebuild (9.2s), including 13 added regressions for navigation/lifecycle/outline/valid-image handling. This newer APK remains uninstalled; native evidence below belongs to the earlier 453-test build. No backend schema changed and the 585 database assertions were not rerun in this UI-only follow-up. Do not equate fake-loader PNG rendering with positive live Storage/native student acceptance.
+
+Latest catalog checkpoint (2026-10-20): main passed 453 app tests, clean analysis/format, configured Android build and 585 hosted assertions (155 catalog + 430 regressions), with fixture cleanup. Huawei verified empty/no-match/clear/background closure/reopen under the existing administrator identity. No temporary content was published, and actual native student/populated/image acceptance remains open. Additive schema was deployed before rollback testing because local Docker lacks WSL; do not describe this as atomic preflight. Independent Agency review was bounded source inspection, not an executed Claude Code audit or exhaustive security scan. Remote checks passed for f79f359 only, not the unpushed catalog increment.
 
 Subsequent main checkpoint: administrator cover binary workflow accepted on Huawei; materials schema deployed to development and 163 material assertions plus the prior 267 database assertions passed (430 total), with fixture cleanup confirmed. Initial material client brought app tests to 285 with clean analysis and configured Android build (55.0s); originating-actor retry correction remains subject to fresh tests. Use latest status for post-correction results, not this historical count.
 

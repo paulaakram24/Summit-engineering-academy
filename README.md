@@ -19,9 +19,11 @@ The supplied official logo is stored at `assets/sea-logo.png`. Use it as the pri
 
 ## Local setup
 
-Development backend is deployed. Google sign-in, mandatory profile save, first-admin provisioning and session restoration after app restart are verified on Huawei. **Manage courses** provides administrator course/session lists, create/edit, exact EGP prices, ordering and recoverable delete/restore with confirmation. Administrator lifecycle and private course-cover selection/readback/replacement/removal/cleanup were accepted on Huawei using an owner-approved temporary draft on 2026-10-19; it was never published and is now soft-deleted/recoverable. Server authorization and audit remain mandatory; restore returns to draft. See `docs/PHASE2_DEVICE_ACCEPTANCE.md`; student-side, iOS and signed release-artifact acceptance remain open. Materials, student catalog, purchases and playback remain unfinished. Email delivery/recovery and remaining identity acceptance also stay open. `ROADMAP.md` is the canonical phase sequence; `PROJECT_STATUS.md` records evidence.
+Development backend is deployed. Google sign-in, required profile save, first administrator, session restoration, administrator course/session/material authoring and private course-cover lifecycle are verified on Huawei within the documented debug scope. Temporary test content remains unpublished and recoverably deleted. `ROADMAP.md` is the canonical phase sequence; `PROJECT_STATUS.md` records evidence and open gates. Email delivery/recovery, other identity acceptance, protected media, purchases, iOS and signed release acceptance remain incomplete.
 
-Latest follow-up: administrator **Sessions → Materials** authoring is implemented and accepted on Huawei for draft assignments, private HTTPS links and media metadata placeholders, including edit/delete/restore and persistence after app restart. All 355 app tests, clean analysis/format and configured debug build passed. See `docs/ADMIN_MATERIAL_EDITOR.md`. Student material delivery, actual media uploads, catalog, purchases and playback remain unfinished. This separate editor increment requires fresh push approval; approved foundation commit `5fa6d4a` already passed remote Flutter and Backend checks.
+Latest follow-up (2026-10-20): **Browse courses** implements read-only published course cards/details/session outlines, server-side literal search, category/level filters and stable cursor pages, with authenticated image covers/fallback and identity/lifecycle invalidation. Main passed 453 app tests, 585 hosted database assertions, clean analysis/format and configured Android debug build. Installed on Huawei; empty catalog, no-match search/clear, background closure and reopening verified. Populated/native student/cover acceptance remains open because nothing is published; no purchase or playback is enabled. See `docs/CATALOG_IMPLEMENTATION.md` and `docs/PHASE2_DEVICE_ACCEPTANCE.md`. This catalog increment remains unpushed; preceding material-editor commit `f79f359` passed both remote workflows.
+
+Local revision after the device checkpoint above: 466 passing app tests, clean analysis/49-file formatting and configured Android rebuild (9.2s), including a regression-verified stale-card fix after confirmed course withdrawal. That APK is now installed and visually checked on the Android Studio emulator; Huawei retains the previous build. Owner reported emulator admission blocked by the old universal session limit and clarified that admins must be exempt. Current policy is unlimited devices/simultaneous sessions for enabled server-authorized admins; students retain two registered devices and one active session. Deployment and retry evidence is recorded in `PROJECT_STATUS.md`; do not infer authenticated emulator acceptance from installation. Catalog follow-up remains unpushed.
 
 From `app/`, use the pinned Flutter SDK and run:
 
@@ -69,6 +71,9 @@ All authorization must be enforced server-side with Supabase RLS and Edge Functi
 
 ## Documentation
 
+- `docs/CATALOG_IMPLEMENTATION.md` and `docs/CATALOG_DATABASE_TESTS.md` document the verified catalog boundary and remaining physical gates.
+- `docs/ENTITLEMENTS_DESIGN.md` proposes the next commerce/access-state contract; it is not an implemented payment or entitlement service.
+
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) tracks delivery state and decisions.
 - [CHANGELOG.md](CHANGELOG.md) records user-visible and security-relevant changes.
 - The master implementation instructions are in `MASTER_BUILD_PROMPT.md`.
@@ -101,7 +106,7 @@ Before coding, verify `flutter doctor`, Android emulator/device builds, and an i
 5. Add Supabase configuration through secret-safe environment handling.
 6. Prototype authentication and role loading only.
 7. Validate private video playback and signed URL expiry on both platforms.
-8. Validate the two-device/session policy and manual-payment state machine.
+8. Validate the student two-device/one-active-session policy, admin unlimited-device/simultaneous-session exception, and manual-payment state machine.
 9. Only after these checks, begin the first vertical slice.
 
 ## Current prerequisite audit

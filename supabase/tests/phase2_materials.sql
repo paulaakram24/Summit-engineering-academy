@@ -254,11 +254,17 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.assert_material_denied('ended admin admission');
 RESET ROLE;
 UPDATE private.session_access SET ended_at=NULL WHERE session_id='f2c0e300-0000-4000-8000-000000000101';
-UPDATE private.account_access SET active_session_id=NULL WHERE user_id='f2c0e300-0000-4000-8000-000000000001';
+-- Administrators use their own admission, not the student-only active pointer.
+-- Preserve a distinct missing-admission case, separate from the ended case above.
+CREATE TEMP TABLE phase2m_admission_snapshot ON COMMIT DROP AS
+SELECT * FROM private.session_access WHERE session_id='f2c0e300-0000-4000-8000-000000000101'
+  AND user_id='f2c0e300-0000-4000-8000-000000000001';
+DELETE FROM private.session_access WHERE session_id='f2c0e300-0000-4000-8000-000000000101'
+  AND user_id='f2c0e300-0000-4000-8000-000000000001';
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.assert_material_denied('nonadmitted admin');
 RESET ROLE;
-UPDATE private.account_access SET active_session_id='f2c0e300-0000-4000-8000-000000000101' WHERE user_id='f2c0e300-0000-4000-8000-000000000001';
+INSERT INTO private.session_access SELECT * FROM pg_temp.phase2m_admission_snapshot;
 UPDATE auth.users SET email_confirmed_at=NULL WHERE id='f2c0e300-0000-4000-8000-000000000001';
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.assert_material_denied('unverified admin');
