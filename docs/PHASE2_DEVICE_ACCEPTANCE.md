@@ -1,5 +1,25 @@
 # Phase 2 development-device acceptance — 2026-10-19
 
+## Populated catalog on Android Studio emulator — 2026-10-20
+
+Approved checkpoint `3efd651685edf9c288d6ac4de431c2eaeab0d606` pushed as Paula. [Flutter checks](https://github.com/paulaakram24/Summit-engineering-academy/actions/runs/39409350524) and [Backend checks](https://github.com/paulaakram24/Summit-engineering-academy/actions/runs/39409350510) passed. Pre-push local rerun: locked dependencies, clean analysis, 466 tests, 49-file zero-change formatting and Android debug build (69.0s). Native checks below used the existing installed APK hash 7884B004D1C5BDE581DA70EE368935E327B8228E11B55ECBEC9EDA3EB9981FF6; no later app runtime changes.
+
+Main visually confirmed the owner-controlled Administrator home, then used normal admitted app forms, not service-role writes or impersonation. New course `b0596d0f-c788-4043-b4b1-d3bb4b5dde75`, title `SEA-CATALOG-TEMP-20261020`, instructor `Synthetic QA`, category `SEA Test Only`, level `QA`, price 12345 piasters. New session `3c01762d-11b5-4a75-8f2c-b7fe3816c609`, title `SEA-TEMP-SESSION-1`, number 1, price zero, preview-designated. No covers, materials, payments or purchases. The older recoverably deleted course was not modified.
+
+Accepted by direct emulator screen inspection:
+
+- Both draft records hidden from Browse courses.
+- Published course renders safe metadata, 123.45 EGP price and missing-cover icon; while its session remains draft, detail says No published sessions yet.
+- After session publication, detail shows numbered outline, description, 0.00 EGP and Preview designated — playback not enabled; no ownership, purchase or playback action.
+- Instructor search `Synthetic QA` together with category `SEA Test Only` and level `QA` returns the course. Detail → Back retains criteria. This one-item fixture does not test native pagination or prove arbitrary search correctness; those remain automated evidence.
+- Backgrounding the populated detail then returning clears cards/details and displays Catalog access closed. Ordinary back/reopen restores fresh browsing under the existing account, without new login or session reset.
+- Archived session first, then course using normal Status forms, not deletion. Admin lists show archived; independent hosted readback confirms both archived, deleted_at null, course cover null, zero session materials and zero published courses.
+- Search `SEA-CATALOG-TEMP` after archiving returns no matches; Clear filters restores No published courses yet. Archived fixtures remain recoverable; nothing permanently removed.
+
+Evidence is outside Git in `E:/Android-prerequisites-Summit/`: `sea-draft-hidden.png`, `sea-populated-catalog.png`, `sea-draft-session-hidden.png`, `sea-published-outline.png`, `sea-combined-confirmed.png`, `sea-return-filters.png`, `sea-background-return.png`, `sea-session-archived.png`, `sea-course-archived.png`, `sea-archived-hidden.png`, `sea-final-empty-catalog.png`. Android input sometimes produced an unsettled popup/keyboard capture; only final settled selections/readbacks above are accepted. No screenshot of real account details is committed.
+
+Scope: Android 17/API 37 emulator, administrator account, debug artifact. Does not close student-account, positive live Storage image, screen-reader, small-screen/large-text, native later-page, Huawei, iOS or signed-release gates. No logout/revocation or two-device student acceptance attempted. Follow-up documentation is separate from the approved push and needs fresh approval before pushing.
+
 ## Android Studio emulator alternative — 2026-10-20
 
 Owner authorized switching while Huawei is disconnected. Reused the installed Medium_Phone_API_37.0 AVD; WHPX acceleration is usable, and boot_completed=1 / ADB online established successful startup. Runtime Android 17/API 37, 1080×2400. Launch used two cores and 2048 MiB with cold boot/no snapshot save, no data wipe and no Windows security/feature changes. Existing virtual data was preserved.
