@@ -4,6 +4,8 @@ Summit Engineering Academy is a mobile learning app where students browse course
 
 ## Planned stack
 
+Current checkpoint (2026-10-20): catalog accessibility follow-up passes 487 app tests, clean analysis/formatting and an Android debug build. Owner-controlled emulator checks accepted administrator login/restart and private cover rendering; temporary content was archived afterward without deleting its cover/material. Catalog/admin-session runtime was pushed as `3efd651`, followed by acceptance notes `9b4e8de`; the owner has now approved the pending accessibility/requirements milestone. See PROJECT_STATUS.md for its actual push/CI outcome. Older checkpoint paragraphs below are historical. Commerce, student entitlements, protected playback, native TalkBack and signed-release acceptance remain unfinished. Bundles are editable admin/instructor-selected sessions; membership changes apply to both existing and new buyers.
+
 - Flutter stable, Dart
 - Flutter Material 3 with a responsive Student/Admin design system
 - GoRouter or equivalent typed navigation

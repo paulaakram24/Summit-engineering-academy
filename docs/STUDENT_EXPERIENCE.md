@@ -32,7 +32,7 @@ Acceptance: verify each state with server fixtures and a real student session; d
 - Support stable recent/alphabetical sorting and return navigation. Do not fabricate purchase timestamps or duplicate a course because it has several purchased sessions. Preserve actual individual purchases and their access scope.
 - Loading/error states must not briefly display No purchases or leak the previous user's library. Clear data on auth changes; protected actions re-check authorization.
 
-Acceptance: cover empty, full-course-only, session-only, mixed and unavailable-content accounts, pagination/sorting and account changes. Partial ownership must stay partial. Future-session course grants follow the existing purchase contract; bundle/refund specifics remain an open business decision.
+Acceptance: cover empty, full-course-only, session-only, mixed and unavailable-content accounts, pagination/sorting and account changes. Partial ownership must stay partial. Future-session course grants follow the existing purchase contract. Owner clarified editable admin/instructor-selected bundles (2026-10-20): added/removed members change bundle coverage for both existing and new buyers; preserve original purchase snapshots and independently valid grants. Test membership changes and refresh stale library/access state without bypassing availability or admin-regrant gates. Admins review/record refunds with manual external funds return; detailed refund eligibility/access consequences remain open. Republished archived content requires a fresh admin access grant; old purchases remain in history without automatic access restoration or an assumed second payment.
 
 ## 4. Continue learning — milestone 4.3
 

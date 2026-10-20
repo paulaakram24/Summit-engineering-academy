@@ -312,10 +312,13 @@ class _CatalogScreenState extends State<CatalogScreen>
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
             child: !_allowed
-                ? const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Catalog access closed. Go back and reopen after account verification.',
+                ? Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: const Text(
+                        'Catalog access closed. Go back and reopen after account verification.',
+                      ),
                     ),
                   )
                 : ListView(
@@ -401,7 +404,7 @@ class _CatalogScreenState extends State<CatalogScreen>
     ),
     if (_busy) const LinearProgressIndicator(semanticsLabel: 'Loading catalog'),
     if (_error != null) ...[
-      Text(_error!, semanticsLabel: _error),
+      _status(_error!),
       TextButton(
         onPressed: _busy ? null : () => _load(),
         child: const Text('Retry catalog'),
@@ -413,7 +416,7 @@ class _CatalogScreenState extends State<CatalogScreen>
         _error == null &&
         _page != null &&
         _courses.isEmpty)
-      Text(
+      _status(
         trimCatalogSpaces(_search.text).isEmpty &&
                 _category == null &&
                 _level == null
@@ -447,6 +450,9 @@ class _CatalogScreenState extends State<CatalogScreen>
       ),
   ];
 
+  Widget _status(String message) =>
+      Semantics(liveRegion: true, child: Text(message));
+
   Widget _filter(
     String label,
     String? value,
@@ -456,6 +462,22 @@ class _CatalogScreenState extends State<CatalogScreen>
     key: ValueKey('$label:$value:${values.join('|')}'),
     initialValue: value,
     isExpanded: true,
+    isDense: false,
+    itemHeight: null,
+    // Keep the closed field bounded even when an unselected option is long.
+    // The menu below wraps the complete label; long-press also reveals it here.
+    selectedItemBuilder: (context) => [
+      const Text('All'),
+      for (final item in [
+        if (value != null && !values.contains(value)) value,
+        ...values,
+      ])
+        Tooltip(
+          message: item,
+          excludeFromSemantics: true,
+          child: Text(item, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ),
+    ],
     decoration: InputDecoration(labelText: label),
     items: [
       const DropdownMenuItem<String>(value: null, child: Text('All')),
@@ -463,10 +485,7 @@ class _CatalogScreenState extends State<CatalogScreen>
         if (value != null && !values.contains(value)) value,
         ...values,
       ])
-        DropdownMenuItem(
-          value: item,
-          child: Text(item, maxLines: 2, overflow: TextOverflow.ellipsis),
-        ),
+        DropdownMenuItem(value: item, child: Text(item)),
     ],
     onChanged: onChanged,
   );
@@ -475,14 +494,14 @@ class _CatalogScreenState extends State<CatalogScreen>
     TextButton(onPressed: _backToCatalog, child: const Text('Back to catalog')),
     if (_busy) const LinearProgressIndicator(semanticsLabel: 'Loading course'),
     if (_error != null) ...[
-      Text(_error!),
+      _status(_error!),
       TextButton(
         onPressed: _busy ? null : () => _details(_detailId!),
         child: const Text('Retry course'),
       ),
     ],
     if (_unavailable)
-      const Text('This course is unavailable. It may have been removed.'),
+      _status('This course is unavailable. It may have been removed.'),
     if (_course case final course?) ...[
       _cover(course),
       Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
@@ -495,7 +514,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       const Text(
         'Descriptions only. Purchases, access status and protected playback are not available yet.',
       ),
-      if (!_busy && _outlines.isEmpty) const Text('No published sessions yet.'),
+      if (!_busy && _outlines.isEmpty) _status('No published sessions yet.'),
       for (final session in _outlines)
         Card(
           child: Padding(

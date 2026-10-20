@@ -1,5 +1,17 @@
 # Phase 2 development-device acceptance — 2026-10-19
 
+## Latest artifact login, restart and positive cover — 2026-10-20
+
+APK SHA-256 FF6BC235590E75EF2A9CDCE24989D905838B7A90ED1FAB23E24443973303FEEA (487-test accessibility build) is installed on emulator-5554. Owner completed Google login; main directly observed Administrator home, published catalog card and detail with a green pixel-art cover. Owner confirmed they had republished the existing synthetic pair/changed its cover and explicitly requested archiving after testing. No inference of unauthorized changes or permission to delete the image was made.
+
+Read-only hosted verification: course b0596d0f-c788-4043-b4b1-d3bb4b5dde75 references attached cover asset 5002c704-21bc-4847-bfcc-c7bf65105f0c.png; the object is image/png, 29842 bytes, in course-covers with public=false. Runtime source inspection confirms the injected loader uses the ordinary authenticated Storage.download path plus existing PNG/size/decode checks, not a public URL. Force-stop/relaunch restored the signed-in Administrator home, and reopening catalog rendered the same image. This is restart rendering evidence, not an instrumented network trace or exhaustive cache/auth-storage audit.
+
+After testing, normal admin forms archived session 3c01762d-11b5-4a75-8f2c-b7fe3816c609 then the course. Hosted readback confirms both archived, deleted_at null and zero published courses. The owner-added cover remains attached with its Storage object, and one material row remains underneath; no protected payload was read or altered. The final catalog shows No published courses yet. Nothing permanently deleted. Earlier zero-material/null-cover evidence below belongs to the earlier checkpoint before the owner changed the content.
+
+Captures outside Git: E:/Android-prerequisites-Summit/sea-login-current.png, sea-updated-catalog-current.png, sea-cover-detail-settled.png, sea-latest-restart-settled.png, sea-cover-after-restart.png, sea-latest-session-archived.png, sea-latest-course-archived.png and sea-final-hidden-with-cover.png. An initial detail/startup capture showed loading; only settled captures are accepted. Owner account details are not committed.
+
+Scope is current debug APK, actual administrator, Android emulator. Student and anonymous denial, native TalkBack announcements, native long-label interaction, Huawei/iOS and signed release remain open. No new tests/build/schema or push in this device-only acceptance. Accessibility source/test changes still require fresh push approval.
+
 ## Populated catalog on Android Studio emulator — 2026-10-20
 
 Approved checkpoint `3efd651685edf9c288d6ac4de431c2eaeab0d606` pushed as Paula. [Flutter checks](https://github.com/paulaakram24/Summit-engineering-academy/actions/runs/39409350524) and [Backend checks](https://github.com/paulaakram24/Summit-engineering-academy/actions/runs/39409350510) passed. Pre-push local rerun: locked dependencies, clean analysis, 466 tests, 49-file zero-change formatting and Android debug build (69.0s). Native checks below used the existing installed APK hash 7884B004D1C5BDE581DA70EE368935E327B8228E11B55ECBEC9EDA3EB9981FF6; no later app runtime changes.

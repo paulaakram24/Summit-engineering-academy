@@ -12,7 +12,7 @@ Use the supplied official logo at `assets/sea-logo.png` as the primary brand ass
 
 The content hierarchy is Course → Sessions → multiple videos/files/links. Courses and sessions support Draft, Published, and Archived states. Sessions are released immediately when published. Students can see published course/session metadata, including locked items and free previews where configured.
 
-Students can buy an individual session or complete course using one-time EGP purchases. A course purchase unlocks existing and future sessions. Admins can manually enroll, grant/revoke access, and record cash purchases. Purchases/access follow configurable expiration rules. No subscriptions are required initially.
+Students can buy an individual session, an editable admin/instructor-selected session bundle or complete course using one-time EGP purchases. A course purchase covers existing and future sessions subject to server availability/restoration rules. Bundles have one EGP price; later sessions are excluded unless explicitly added. Bundle membership additions/removals apply to existing buyers and new buyers alike. Preserve immutable purchase snapshots and audit membership revisions while resolving current bundle coverage dynamically; do not rewrite purchase history. Bundle edits cannot bypass availability/restoration gates or revoke independent valid grants. Admins currently perform instructor duties; no separate Instructor role is introduced. Admins can manually enroll, grant/revoke access, and record cash purchases. Access starts on admin approval with no automatic business expiry. Archiving and republication do not erase history or automatically restore old purchased access: require a fresh audited admin grant for the affected content, not an assumed second payment. No subscriptions are required initially.
 
 ## Payments
 
@@ -26,6 +26,8 @@ Implement manual InstaPay and Vodafone Cash payment flows:
 6. Admins may create approved cash/manual purchases.
 
 Prevent duplicate approval, amount tampering, replay, and unauthorized receipt access. Store a complete payment and audit history.
+
+Admins review and record refunds in SEA; funds are returned manually outside the app through InstaPay/Vodafone Cash. Never claim an automatic money transfer. Resolve eligibility, partial refunds and access consequences before enabling refund transitions.
 
 ## Security and access control
 
