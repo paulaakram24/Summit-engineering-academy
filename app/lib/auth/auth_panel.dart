@@ -8,6 +8,7 @@ import '../content/course_image_selector.dart';
 import '../content/material_repository.dart';
 import '../catalog/catalog_repository.dart';
 import '../catalog/catalog_screen.dart';
+import '../bookmarks/bookmark_repository.dart';
 
 import 'auth_controller.dart';
 import 'auth_repository.dart';
@@ -20,12 +21,14 @@ class AuthPanel extends StatefulWidget {
     this.materialRepository,
     this.catalogRepository,
     this.catalogCoverLoader,
+    this.bookmarkRepository,
   });
   final AuthController controller;
   final ContentRepository? contentRepository;
   final MaterialRepository? materialRepository;
   final CatalogRepository? catalogRepository;
   final CatalogCoverLoader? catalogCoverLoader;
+  final BookmarkRepository? bookmarkRepository;
   @override
   State<AuthPanel> createState() => _AuthPanelState();
 }
@@ -306,11 +309,31 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
                               auth: auth,
                               repository: widget.catalogRepository!,
                               loadCover: widget.catalogCoverLoader,
+                              bookmarkRepository: widget.bookmarkRepository,
                             ),
                           ),
                         ),
                   icon: const Icon(Icons.explore_outlined),
                   label: const Text('Browse courses'),
+                ),
+              if (widget.catalogRepository != null &&
+                  widget.bookmarkRepository != null)
+                FilledButton.icon(
+                  onPressed: auth.busy
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => CatalogScreen(
+                              auth: auth,
+                              repository: widget.catalogRepository!,
+                              bookmarkRepository: widget.bookmarkRepository,
+                              savedOnly: true,
+                              loadCover: widget.catalogCoverLoader,
+                            ),
+                          ),
+                        ),
+                  icon: const Icon(Icons.bookmark_outline),
+                  label: const Text('Saved courses'),
                 ),
               if (auth.access!.role == 'admin' &&
                   widget.contentRepository != null)

@@ -1,5 +1,15 @@
 # Phase 2 development-device acceptance — 2026-10-19
 
+## Saved courses bounded emulator checkpoint — 2026-10-20
+
+Final locally formatted-source build: 561 passing Flutter tests, clean analysis, 55-file zero-change format check and configured Android debug build (40.8s). APK size 189069343 bytes, SHA-256 8EC6FFE729A61094CEF6578E4B74CF7A18E3BB2F05F44A4275DF0FC7C8A04A2F. Installed with -r on emulator-5554; device base.apk SHA-256 matched. Huawei was not updated. The transient Android installation Updating screen was superseded by the settled SEA Administrator home, retaining the existing owner-controlled session without new login or account manipulation.
+
+Observed Saved courses entry and opened the new view using its actual visible button. It shows Saved for later—not purchased or enrolled, Refresh saved courses and the honest No available saved courses message. Triggered refresh, backgrounded the app and relaunched: the old route had cleared its content and showed access closed. Back returned to authenticated home; opening Saved courses again made a fresh request and settled to the same honest empty state. No latency, native speech or populated persistence claim follows from these screenshots.
+
+Development migration 20261020132830 is deployed; seven hosted rollback suites passed 715 assertions before/after deployment and cleanup readback found zero reserved users/bookmarks/courses. Anonymous real HTTP returned 401/42501. Zero published courses remains expected after the prior owner-approved archive. No owner content was republished, no bookmark mutation made under the owner account, and no receipt, purchase, grant, protected material or real payment was involved.
+
+Screenshots remain outside Git under E:/Android-prerequisites-Summit/: sea-bookmarks-settled.png (contains owner profile details; do not commit), sea-saved-courses-empty.png, sea-saved-background.png and sea-saved-courses-reopened.png. Latest emulator is on reopened Saved courses. Hidden-reference management after restart and populated save/remove/restart/student/TalkBack/Huawei/iOS/signed-release acceptance remain open. See SAVED_COURSES_DESIGN.md; this does not complete Phase 2 or authorize a new push.
+
 ## Latest artifact login, restart and positive cover — 2026-10-20
 
 APK SHA-256 FF6BC235590E75EF2A9CDCE24989D905838B7A90ED1FAB23E24443973303FEEA (487-test accessibility build) is installed on emulator-5554. Owner completed Google login; main directly observed Administrator home, published catalog card and detail with a green pixel-art cover. Owner confirmed they had republished the existing synthetic pair/changed its cover and explicitly requested archiving after testing. No inference of unauthorized changes or permission to delete the image was made.

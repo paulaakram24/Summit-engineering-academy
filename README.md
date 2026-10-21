@@ -4,6 +4,8 @@ Summit Engineering Academy is a mobile learning app where students browse course
 
 ## Planned stack
 
+Latest development increment (2026-10-20): **Saved courses** adds account-backed save/remove and a separate saved list, explicitly not purchases/enrollment. Version checks reject stale writes; only published course metadata is returned. Development backend checks passed 715 assertions; app checks passed 561 tests, analysis/formatting and an Android debug build. Current APK installed/hash-verified on emulator; admin empty/background behavior accepted, not populated persistence or student acceptance. Hidden-reference management remains open. See `docs/SAVED_COURSES_DESIGN.md` and `PROJECT_STATUS.md`. This increment is unpushed. Initial production channel is direct Android with manual InstaPay/Vodafone Cash; production signing/download/update gates remain open.
+
 Current checkpoint (2026-10-20): catalog accessibility follow-up passes 487 app tests, clean analysis/formatting and an Android debug build. Owner-controlled emulator checks accepted administrator login/restart and private cover rendering; temporary content was archived afterward without deleting its cover/material. Catalog/admin-session runtime was pushed as `3efd651`, followed by acceptance notes `9b4e8de`; the owner has now approved the pending accessibility/requirements milestone. See PROJECT_STATUS.md for its actual push/CI outcome. Older checkpoint paragraphs below are historical. Commerce, student entitlements, protected playback, native TalkBack and signed-release acceptance remain unfinished. Bundles are editable admin/instructor-selected sessions; membership changes apply to both existing and new buyers.
 
 - Flutter stable, Dart

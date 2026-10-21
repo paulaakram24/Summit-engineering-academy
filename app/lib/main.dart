@@ -10,6 +10,8 @@ import 'content/supabase_material_repository.dart';
 import 'catalog/catalog_repository.dart';
 import 'catalog/supabase_catalog_repository.dart';
 import 'catalog/catalog_screen.dart';
+import 'bookmarks/bookmark_repository.dart';
+import 'bookmarks/supabase_bookmark_repository.dart';
 import 'content/course_covers.dart';
 
 Future<void> main() async {
@@ -31,6 +33,9 @@ Future<void> main() async {
           runtime.repository.client,
         ),
         catalogRepository: SupabaseCatalogRepository(runtime.repository.client),
+        bookmarkRepository: SupabaseBookmarkRepository(
+          runtime.repository.client,
+        ),
         catalogCoverLoader: (course) => coverService.downloadCover(
           Course(
             id: course.id,
@@ -60,6 +65,7 @@ class SummitApp extends StatefulWidget {
     this.materialRepository,
     this.catalogRepository,
     this.catalogCoverLoader,
+    this.bookmarkRepository,
     this.initializationFailed = false,
   });
   final AuthController? authController;
@@ -67,6 +73,8 @@ class SummitApp extends StatefulWidget {
   final MaterialRepository? materialRepository;
   final CatalogRepository? catalogRepository;
   final CatalogCoverLoader? catalogCoverLoader;
+  // Optional until the bookmark backend has been verified and activated.
+  final BookmarkRepository? bookmarkRepository;
   final bool initializationFailed;
   @override
   State<SummitApp> createState() => _SummitAppState();
@@ -143,6 +151,7 @@ class _SummitAppState extends State<SummitApp> {
                         materialRepository: widget.materialRepository,
                         catalogRepository: widget.catalogRepository,
                         catalogCoverLoader: widget.catalogCoverLoader,
+                        bookmarkRepository: widget.bookmarkRepository,
                       )
                     else
                       Card(

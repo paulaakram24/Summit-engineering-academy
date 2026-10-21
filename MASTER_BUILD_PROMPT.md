@@ -16,18 +16,20 @@ Students can buy an individual session, an editable admin/instructor-selected se
 
 ## Payments
 
+Initial distribution is direct Android installation, selected by the owner on 2026-10-20. Defer Google Play/App Store submission and public iPhone release; revalidate their billing requirements before a later store build. Do not introduce store billing or a website without a new scope decision. Direct production distribution still requires a signed release artifact, secure key handling, verified download/update procedures and explicit release approval; never publish the debug APK as production.
+
 Implement manual InstaPay and Vodafone Cash payment flows:
 
 1. Student creates a pending order.
-2. App displays configured payment instructions.
+2. Student selects InstaPay or Vodafone Cash; app displays the corresponding configured payment instructions and server-priced EGP amount.
 3. Student submits transaction reference, sender information, amount, and receipt screenshot.
-4. Admin reviews the request and approves or rejects it with an internal note.
+4. Request remains pending while an admin checks the screenshot and confirms actual receipt of funds, then approves or rejects it with an internal note. A screenshot alone is not proof of payment.
 5. Only server-side approval grants access.
 6. Admins may create approved cash/manual purchases.
 
 Prevent duplicate approval, amount tampering, replay, and unauthorized receipt access. Store a complete payment and audit history.
 
-Admins review and record refunds in SEA; funds are returned manually outside the app through InstaPay/Vodafone Cash. Never claim an automatic money transfer. Resolve eligibility, partial refunds and access consequences before enabling refund transitions.
+Admins may approve full or partial refunds case by case and record them in SEA; funds are returned manually outside the app through InstaPay/Vodafone Cash. Never claim an automatic money transfer or treat approval as proof of completed return. Require an explicit separately recorded access decision (retain or revoke the selected source/scope), not automatic revocation from the refund amount. Preserve immutable purchase/refund history and prevent cumulative refunds exceeding the paid amount. Resolve overlapping-grant revocation scope and operational reconciliation before enabling affected transitions. Store-billed purchases require their applicable platform refund/reconciliation integration rather than fabricated manual settlement.
 
 ## Security and access control
 

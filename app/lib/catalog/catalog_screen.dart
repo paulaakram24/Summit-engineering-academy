@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../auth/auth_controller.dart';
+import '../bookmarks/bookmark_repository.dart';
 import '../content/content_models.dart' show formatPricePiasters;
 import 'catalog_repository.dart';
 
@@ -14,10 +15,14 @@ class CatalogScreen extends StatefulWidget {
     required this.auth,
     required this.repository,
     this.loadCover,
+    this.bookmarkRepository,
+    this.savedOnly = false,
   });
   final AuthController auth;
   final CatalogRepository repository;
   final CatalogCoverLoader? loadCover;
+  final BookmarkRepository? bookmarkRepository;
+  final bool savedOnly;
   @override
   State<CatalogScreen> createState() => _CatalogScreenState();
 }
@@ -39,13 +44,19 @@ class _CatalogScreenState extends State<CatalogScreen>
   final _courses = <CatalogCourse>[];
   final _outlines = <CatalogSession>[];
   bool _unavailable = false;
+  CourseBookmark? _bookmark;
   bool get _allowed =>
       !_closed &&
       widget.auth.stage == AuthStage.ready &&
       identical(widget.auth.access, _access) &&
       _actor != null &&
       isCatalogUuid(_actor!) &&
-      widget.repository.currentActorId?.toLowerCase() == _actor!.toLowerCase();
+      widget.repository.currentActorId?.toLowerCase() ==
+          _actor!.toLowerCase() &&
+      (!widget.savedOnly || widget.bookmarkRepository != null) &&
+      (widget.bookmarkRepository == null ||
+          widget.bookmarkRepository!.currentActorId?.toLowerCase() ==
+              _actor!.toLowerCase());
 
   @override
   void initState() {
@@ -67,7 +78,9 @@ class _CatalogScreenState extends State<CatalogScreen>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.auth != widget.auth ||
         oldWidget.repository != widget.repository ||
-        oldWidget.loadCover != widget.loadCover) {
+        oldWidget.loadCover != widget.loadCover ||
+        oldWidget.bookmarkRepository != widget.bookmarkRepository ||
+        oldWidget.savedOnly != widget.savedOnly) {
       oldWidget.auth.removeListener(_authChanged);
       widget.auth.addListener(_authChanged);
       _close();
@@ -81,6 +94,7 @@ class _CatalogScreenState extends State<CatalogScreen>
     _courses.clear();
     _outlines.clear();
     _course = null;
+    _bookmark = null;
     _page = null;
     _sessions = null;
     _filters = null;
@@ -150,14 +164,18 @@ class _CatalogScreenState extends State<CatalogScreen>
       }
     });
     try {
-      final filters = _filters ?? await widget.repository.getFilters();
+      final filters = widget.savedOnly
+          ? null
+          : _filters ?? await widget.repository.getFilters();
       if (!_current(epoch)) return;
-      final page = await widget.repository.listCourses(
-        search: search,
-        category: category,
-        level: level,
-        after: after,
-      );
+      final page = widget.savedOnly
+          ? await widget.bookmarkRepository!.listSavedCourses(after: after)
+          : await widget.repository.listCourses(
+              search: search,
+              category: category,
+              level: level,
+              after: after,
+            );
       if (!_current(epoch)) return;
       if (page.items.any(
         (item) => _courses.any(
@@ -180,11 +198,19 @@ class _CatalogScreenState extends State<CatalogScreen>
     }
   }
 
-  String _failure(Object error) => error is CatalogFailure
+  String _failure(Object error) => error is BookmarkFailure
+      ? error.message
+      : error is CatalogFailure
       ? error.message
       : 'Unable to load the catalog. Check your connection and access, then retry.';
 
   bool _fatal(Object error) {
+    if (error is BookmarkFailure &&
+        (error.kind == BookmarkFailureKind.accessRequired ||
+            error.kind == BookmarkFailureKind.actorChanged)) {
+      _close();
+      return true;
+    }
     if (error is CatalogFailure &&
         (error.kind == CatalogFailureKind.accessRequired ||
             error.kind == CatalogFailureKind.actorChanged)) {
@@ -192,6 +218,73 @@ class _CatalogScreenState extends State<CatalogScreen>
       return true;
     }
     return false;
+  }
+
+  void _invalidateCards() {
+    _courses.clear();
+    _page = null;
+    _dirty = true;
+    _catalogOffset = 0;
+  }
+
+  void _withdraw() {
+    setState(() {
+      _invalidateCards();
+      _course = null;
+      _bookmark = null;
+      _outlines.clear();
+      _sessions = null;
+      _unavailable = true;
+    });
+  }
+
+  Future<void> _changeBookmark(bool saved) async {
+    if (!_allowed) {
+      _close();
+      return;
+    }
+    final repository = widget.bookmarkRepository;
+    if (_busy || repository == null || _bookmark == null || _course == null) {
+      return;
+    }
+    final epoch = ++_epoch;
+    final id = _course!.id;
+    final intent = SetCourseBookmarkRequest(
+      actorId: repository.currentActorId!,
+      courseId: id,
+      saved: saved,
+      expectedRevision: _bookmark!.revision,
+    );
+    setState(() {
+      _busy = true;
+      _error = null;
+      _invalidateCards();
+    });
+    try {
+      await repository.setBookmark(intent);
+      if (!_current(epoch)) return;
+      // Never merge a mutation response into an obsolete metadata/state view.
+      setState(_invalidateCards);
+      await _details(id);
+    } catch (error) {
+      if (!_current(epoch) || _fatal(error)) return;
+      if (error is BookmarkFailure &&
+          error.kind == BookmarkFailureKind.courseUnavailable) {
+        _withdraw();
+      } else {
+        setState(() {
+          _invalidateCards();
+          _bookmark = null;
+          _error =
+              error is BookmarkFailure &&
+                  error.kind == BookmarkFailureKind.stateConflict
+              ? 'Saved-course state changed. Retry course to refresh before another change. No automatic retry was sent.'
+              : 'The bookmark change could not be confirmed and may already have saved. Retry course to refresh before another change. No automatic retry was sent.';
+        });
+      }
+    } finally {
+      if (_current(epoch)) setState(() => _busy = false);
+    }
   }
 
   Future<void> _details(String id, {bool more = false}) async {
@@ -209,6 +302,7 @@ class _CatalogScreenState extends State<CatalogScreen>
     setState(() {
       _busy = true;
       _error = null;
+      _bookmark = null;
       _unavailable = false;
       if (!more) {
         _course = null;
@@ -223,18 +317,15 @@ class _CatalogScreenState extends State<CatalogScreen>
       final course = await widget.repository.getCourse(id);
       if (!_current(epoch)) return;
       if (course == null) {
-        setState(() {
-          // This is confirmed withdrawal, not a transient loading error. Do
-          // not restore an old card/cover or cursor when the user goes Back.
-          _courses.clear();
-          _page = null;
-          _dirty = true;
-          _catalogOffset = 0;
-          _course = null;
-          _outlines.clear();
-          _sessions = null;
-          _unavailable = true;
-        });
+        _withdraw();
+        return;
+      }
+      final bookmark = widget.bookmarkRepository == null
+          ? null
+          : await widget.bookmarkRepository!.getBookmark(id);
+      if (!_current(epoch)) return;
+      if (widget.bookmarkRepository != null && bookmark == null) {
+        _withdraw();
         return;
       }
       final page = await widget.repository.listSessions(id, after: after);
@@ -250,6 +341,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       }
       setState(() {
         _course = course;
+        _bookmark = bookmark;
         _outlines.addAll(page.items);
         _sessions = page;
       });
@@ -273,6 +365,7 @@ class _CatalogScreenState extends State<CatalogScreen>
     setState(() {
       _detailId = null;
       _course = null;
+      _bookmark = null;
       _sessions = null;
       _outlines.clear();
       _busy = false;
@@ -306,7 +399,9 @@ class _CatalogScreenState extends State<CatalogScreen>
       if (!didPop && !_closed) _backToCatalog();
     },
     child: Scaffold(
-      appBar: AppBar(title: const Text('Browse courses')),
+      appBar: AppBar(
+        title: Text(widget.savedOnly ? 'Saved courses' : 'Browse courses'),
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -345,63 +440,72 @@ class _CatalogScreenState extends State<CatalogScreen>
   );
 
   List<Widget> _catalog(BuildContext context) => [
-    TextField(
-      controller: _search,
-      maxLength: 100,
-      decoration: const InputDecoration(
-        labelText: 'Search courses',
-        hintText: 'Title, instructor or category',
+    if (widget.savedOnly) ...[
+      const Text(bookmarkDisclaimer),
+      TextButton(
+        onPressed: _busy ? null : () => _load(),
+        child: const Text('Refresh saved courses'),
       ),
-      textInputAction: TextInputAction.search,
-      onChanged: (_) => _criteriaChanged(),
-      onSubmitted: (_) => _load(),
-    ),
-    if (_filters != null) ...[
-      _filter('Category', _category, _filters!.categories, (value) {
-        _category = value;
-        _criteriaChanged();
-        _load();
-      }),
-      _filter('Level / year', _level, _filters!.levels, (value) {
-        _level = value;
-        _criteriaChanged();
-        _load();
-      }),
     ],
-    Wrap(
-      spacing: 12,
-      children: [
-        FilledButton.icon(
-          onPressed: _busy
-              ? null
-              : () {
-                  FocusScope.of(context).unfocus();
-                  _load();
-                },
-          icon: const Icon(Icons.search),
-          label: const Text('Search'),
+    if (!widget.savedOnly) ...[
+      TextField(
+        controller: _search,
+        maxLength: 100,
+        decoration: const InputDecoration(
+          labelText: 'Search courses',
+          hintText: 'Title, instructor or category',
         ),
-        TextButton(
-          onPressed: () {
-            _search.clear();
-            _category = _level = null;
-            _criteriaChanged();
-            _filters = null;
-            _load();
-          },
-          child: const Text('Clear filters'),
-        ),
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () {
-                  _filters = null;
-                  _load();
-                },
-          child: const Text('Refresh catalog'),
-        ),
+        textInputAction: TextInputAction.search,
+        onChanged: (_) => _criteriaChanged(),
+        onSubmitted: (_) => _load(),
+      ),
+      if (_filters != null) ...[
+        _filter('Category', _category, _filters!.categories, (value) {
+          _category = value;
+          _criteriaChanged();
+          _load();
+        }),
+        _filter('Level / year', _level, _filters!.levels, (value) {
+          _level = value;
+          _criteriaChanged();
+          _load();
+        }),
       ],
-    ),
+      Wrap(
+        spacing: 12,
+        children: [
+          FilledButton.icon(
+            onPressed: _busy
+                ? null
+                : () {
+                    FocusScope.of(context).unfocus();
+                    _load();
+                  },
+            icon: const Icon(Icons.search),
+            label: const Text('Search'),
+          ),
+          TextButton(
+            onPressed: () {
+              _search.clear();
+              _category = _level = null;
+              _criteriaChanged();
+              _filters = null;
+              _load();
+            },
+            child: const Text('Clear filters'),
+          ),
+          TextButton(
+            onPressed: _busy
+                ? null
+                : () {
+                    _filters = null;
+                    _load();
+                  },
+            child: const Text('Refresh catalog'),
+          ),
+        ],
+      ),
+    ],
     if (_busy) const LinearProgressIndicator(semanticsLabel: 'Loading catalog'),
     if (_error != null) ...[
       _status(_error!),
@@ -410,16 +514,23 @@ class _CatalogScreenState extends State<CatalogScreen>
         child: const Text('Retry catalog'),
       ),
     ],
-    if (_dirty) const Text('Tap Search to update results.'),
+    if (_dirty)
+      Text(
+        widget.savedOnly
+            ? 'Refresh saved courses to update results.'
+            : 'Tap Search to update results.',
+      ),
     if (!_dirty &&
         !_busy &&
         _error == null &&
         _page != null &&
         _courses.isEmpty)
       _status(
-        trimCatalogSpaces(_search.text).isEmpty &&
-                _category == null &&
-                _level == null
+        widget.savedOnly
+            ? 'No available saved courses. Browse courses to save one for later.'
+            : trimCatalogSpaces(_search.text).isEmpty &&
+                  _category == null &&
+                  _level == null
             ? 'No published courses yet.'
             : 'No courses match your search or filters.',
       ),
@@ -503,6 +614,33 @@ class _CatalogScreenState extends State<CatalogScreen>
     if (_unavailable)
       _status('This course is unavailable. It may have been removed.'),
     if (_course case final course?) ...[
+      if (widget.bookmarkRepository != null) ...[
+        const Text(bookmarkDisclaimer),
+        if (_bookmark != null)
+          _status(
+            _bookmark!.saved ? 'Course saved for later.' : 'Course not saved.',
+          ),
+        MergeSemantics(
+          child: Semantics(
+            toggled: _bookmark?.saved ?? false,
+            child: FilledButton.icon(
+              onPressed: _busy || _bookmark == null
+                  ? null
+                  : () => _changeBookmark(!_bookmark!.saved),
+              icon: Icon(
+                _bookmark?.saved == true
+                    ? Icons.bookmark
+                    : Icons.bookmark_border,
+              ),
+              label: Text(
+                _bookmark?.saved == true
+                    ? 'Remove from saved courses'
+                    : 'Save course for later',
+              ),
+            ),
+          ),
+        ),
+      ],
       _cover(course),
       Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
       Text(course.instructor),

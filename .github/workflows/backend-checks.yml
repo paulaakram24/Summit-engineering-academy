@@ -32,6 +32,8 @@ jobs:
         run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_materials.sql
       - name: Test published catalog search, filters and admission boundary
         run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_catalog.sql
+      - name: Test own saved courses, hidden references and admission boundary
+        run: psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' --set ON_ERROR_STOP=1 --file supabase/tests/phase2_bookmarks.sql
       - name: Stop this runner's disposable backend
         if: always()
         run: npx --yes supabase@2.121.0 stop --project-id Summit-engineering-academy --no-backup
