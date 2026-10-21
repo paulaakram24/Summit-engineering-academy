@@ -1,5 +1,13 @@
 # Phase 2 development-device acceptance — 2026-10-19
 
+## Unavailable-bookmark cleanup — 2026-10-21
+
+Same saved Medium_Phone_API_37.0 AVD booted headless without wipe; initial system/Flutter loading captures were superseded by settled Administrator home. New 585-test/15.5s-build APK installed -r and device hash matched 9F59BB0BD326636E4CDF7D0490D0B8B4227481162D3E324E5BF9FD086D5E4890 (189075455 bytes). No new owner login, session recovery or role/account manipulation.
+
+Observed Saved courses and Remove unavailable saved courses; opened the explanatory confirmation, cancelled and returned to unchanged empty view. After read-only hosted verification that total bookmark rows were zero, reopened and confirmed. Settled view displayed Removed 0 unavailable saved courses and refreshed the honest empty list. Readback stayed zero: no real saved data removed. This is a live admitted-admin zero-row integration check, not populated/native student removal or a network trace. Widget tests separately assert Cancel sends no RPC. No course published, content removed or payment/grant involved.
+
+Screenshots outside Git in E:/Android-prerequisites-Summit/: sea-cleanup-list.png, sea-cleanup-dialog.png, sea-cleanup-cancelled.png, sea-cleanup-result.png. Home screenshots contain profile data and must not be committed. Native populated saves/restart, student denial, actual TalkBack/Huawei/iOS and release artifact acceptance remain open; no additional push authorization inferred.
+
 ## Saved courses bounded emulator checkpoint — 2026-10-20
 
 Final locally formatted-source build: 561 passing Flutter tests, clean analysis, 55-file zero-change format check and configured Android debug build (40.8s). APK size 189069343 bytes, SHA-256 8EC6FFE729A61094CEF6578E4B74CF7A18E3BB2F05F44A4275DF0FC7C8A04A2F. Installed with -r on emulator-5554; device base.apk SHA-256 matched. Huawei was not updated. The transient Android installation Updating screen was superseded by the settled SEA Administrator home, retaining the existing owner-controlled session without new login or account manipulation.

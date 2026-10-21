@@ -29,6 +29,14 @@ class BookmarkFake implements BookmarkRepository {
   Future<CourseBookmark?> Function()? onRead;
   Future<CourseBookmark> Function(SetCourseBookmarkRequest)? onSet;
   Future<CatalogPage<CatalogCourse>> Function()? onList;
+  final cleanupActors = <String>[];
+  Future<int> Function()? onClear;
+  @override
+  Future<int> clearUnavailableBookmarks({required String actorId}) async {
+    cleanupActors.add(actorId);
+    return onClear == null ? 0 : await onClear!();
+  }
+
   @override
   Future<CourseBookmark?> getBookmark(String courseId) async {
     reads.add(courseId);

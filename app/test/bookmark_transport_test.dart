@@ -444,6 +444,142 @@ void main() {
       expect((await repository.setBookmark(intent(revision: 4))).revision, 5);
     },
   );
+  test('cleanup accepts exact count bounds, pins JWT and sends zero RPC parameters', () async {
+    final token = client.auth.currentSession!.accessToken;
+    for (final count in [0, 1, 2147483647]) {
+      response = {'cleared_count': count};
+      expect(
+        await repository.clearUnavailableBookmarks(actorId: catalogActor),
+        count,
+      );
+      expect(
+        requests.last.url.path,
+        '/rest/v1/rpc/clear_unavailable_course_bookmarks',
+      );
+      expect(body(), isEmpty);
+      expect(requests.last.headers['authorization'], 'Bearer $token');
+    }
+    expect(client.headers['Authorization'], isNot('Bearer $token'));
+  });
+  test('cleanup exact object/count parser rejects missing, extra and malformed values', () async {
+    for (final value in [
+      null,
+      [],
+      0,
+      {},
+      {
+        'cleared_count': 0,
+        'ids': ['PRIVATE_CANARY'],
+      },
+      for (final count in [-1, 2147483648, 1.0, '1', null, true])
+        {'cleared_count': count},
+    ]) {
+      response = value;
+      await expectLater(
+        repository.clearUnavailableBookmarks(actorId: catalogActor),
+        throwsA(failure(BookmarkFailureKind.invalidResponse)),
+      );
+    }
+  });
+  test(
+    'cleanup retained actor and malformed actor fail before transmission',
+    () async {
+      await expectLater(
+        repository.clearUnavailableBookmarks(actorId: 'bad'),
+        throwsA(failure(BookmarkFailureKind.invalidInput)),
+      );
+      await signIn(catalogOtherActor);
+      await expectLater(
+        repository.clearUnavailableBookmarks(actorId: catalogActor),
+        throwsA(failure(BookmarkFailureKind.actorChanged)),
+      );
+      expect(requests, isEmpty);
+    },
+  );
+  test(
+    'cleanup rejects delayed replies after account switches including A-B-A',
+    () async {
+      pending = Completer<http.Response>();
+      response = {'cleared_count': 3};
+      final token = client.auth.currentSession!.accessToken;
+      final assertion = expectLater(
+        repository.clearUnavailableBookmarks(actorId: catalogActor),
+        throwsA(failure(BookmarkFailureKind.actorChanged)),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await signIn(catalogOtherActor);
+      await signIn(catalogActor);
+      pending!.complete(
+        http.Response(
+          jsonEncode(response),
+          200,
+          request: requests.single,
+          headers: {'content-type': 'application/json'},
+        ),
+      );
+      await assertion;
+      expect(requests.single.headers['authorization'], 'Bearer $token');
+      expect(body(), isEmpty);
+    },
+  );
+  test('cleanup blocks expired and signed-out identity with no cleanup transmission', () async {
+    await signIn(catalogActor, lifetime: -100);
+    await expectLater(
+      repository.clearUnavailableBookmarks(actorId: catalogActor),
+      throwsA(failure(BookmarkFailureKind.accessRequired)),
+    );
+    expect(requests, isEmpty);
+    await client.auth.signOut(scope: SignOutScope.local);
+    requests.clear();
+    await expectLater(
+      repository.clearUnavailableBookmarks(actorId: catalogActor),
+      throwsA(failure(BookmarkFailureKind.accessRequired)),
+    );
+    expect(requests, isEmpty);
+  });
+  test(
+    'cleanup timeout and network error never retry or fabricate a count',
+    () async {
+      repository = SupabaseBookmarkRepository(
+        client,
+        timeout: const Duration(milliseconds: 20),
+      );
+      pending = Completer<http.Response>();
+      await expectLater(
+        repository.clearUnavailableBookmarks(actorId: catalogActor),
+        throwsA(failure(BookmarkFailureKind.timedOut)),
+      );
+      expect(requests, hasLength(1));
+      pending!.complete(
+        http.Response(
+          jsonEncode({'cleared_count': 9}),
+          200,
+          request: requests.single,
+          headers: {'content-type': 'application/json'},
+        ),
+      );
+      pending = null;
+      networkError = StateError('PRIVATE_CANARY');
+      await expectLater(
+        repository.clearUnavailableBookmarks(actorId: catalogActor),
+        throwsA(failure(BookmarkFailureKind.requestFailed)),
+      );
+      expect(requests, hasLength(2));
+    },
+  );
+  test('cleanup admission failure remains sanitized and never returns zero as success', () async {
+    status = 403;
+    response = {
+      'code': '42501',
+      'message': 'bookmark_access_required',
+      'details': 'PRIVATE_CANARY',
+    };
+    await expectLater(
+      repository.clearUnavailableBookmarks(actorId: catalogActor),
+      throwsA(failure(BookmarkFailureKind.accessRequired)),
+    );
+    expect(requests, hasLength(1));
+  });
   test('unexpected errors do not expose raw bodies or retry', () async {
     networkError = StateError('PRIVATE_CANARY');
     await expectLater(

@@ -92,6 +92,10 @@ abstract class BookmarkRepository {
   String? get currentActorId;
   Future<CourseBookmark?> getBookmark(String courseId);
   Future<CourseBookmark> setBookmark(SetCourseBookmarkRequest request);
+
+  /// Capture actorId before confirmation; it is a client guard, not an RPC
+  /// parameter. Only the current actor's unavailable references are removed.
+  Future<int> clearUnavailableBookmarks({required String actorId});
   Future<CatalogPage<CatalogCourse>> listSavedCourses({
     CatalogCursor? after,
     int limit = 20,

@@ -152,6 +152,22 @@ class SupabaseBookmarkRepository implements BookmarkRepository {
   }
 
   @override
+  Future<int> clearUnavailableBookmarks({required String actorId}) async {
+    _input(isCatalogUuid(actorId));
+    return _call('clear_unavailable_course_bookmarks', {}, (value) {
+      if (value is! Map<String, dynamic> ||
+          value.length != 1 ||
+          !value.containsKey('cleared_count') ||
+          value['cleared_count'] is! int ||
+          (value['cleared_count'] as int) < 0 ||
+          (value['cleared_count'] as int) > catalogMaxInteger) {
+        throw const BookmarkFailure(BookmarkFailureKind.invalidResponse);
+      }
+      return value['cleared_count'] as int;
+    }, expectedActor: actorId);
+  }
+
+  @override
   Future<CatalogPage<CatalogCourse>> listSavedCourses({
     CatalogCursor? after,
     int limit = 20,

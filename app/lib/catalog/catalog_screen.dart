@@ -45,6 +45,9 @@ class _CatalogScreenState extends State<CatalogScreen>
   final _outlines = <CatalogSession>[];
   bool _unavailable = false;
   CourseBookmark? _bookmark;
+  DialogRoute<bool>? _cleanupDialog;
+  bool _cleanupConfirming = false, _cleanupRefreshRequired = false;
+  int? _cleanupCount;
   bool get _allowed =>
       !_closed &&
       widget.auth.stage == AuthStage.ready &&
@@ -91,6 +94,9 @@ class _CatalogScreenState extends State<CatalogScreen>
     if (_closed) return;
     ++_epoch;
     _closed = true;
+    _dismissCleanupDialog();
+    _cleanupCount = null;
+    _cleanupConfirming = false;
     _courses.clear();
     _outlines.clear();
     _course = null;
@@ -125,6 +131,7 @@ class _CatalogScreenState extends State<CatalogScreen>
   @override
   void dispose() {
     ++_epoch;
+    _dismissCleanupDialog();
     widget.auth.removeListener(_authChanged);
     WidgetsBinding.instance.removeObserver(this);
     _search.dispose();
@@ -149,7 +156,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       _close();
       return;
     }
-    if (_busy && more) return;
+    if (_cleanupConfirming || (_busy && more)) return;
     final epoch = ++_epoch;
     final after = more ? _page?.nextCursor : null;
     if (more && after == null) return;
@@ -188,6 +195,7 @@ class _CatalogScreenState extends State<CatalogScreen>
         _filters = filters;
         _courses.addAll(page.items);
         _page = page;
+        if (!more) _cleanupRefreshRequired = false;
       });
     } catch (error) {
       if (_current(epoch) && !_fatal(error)) {
@@ -238,13 +246,120 @@ class _CatalogScreenState extends State<CatalogScreen>
     });
   }
 
+  void _dismissCleanupDialog() {
+    final route = _cleanupDialog;
+    _cleanupDialog = null;
+    if (route == null) return;
+    // Invalidation may happen during build/dispose. Remove this exact route
+    // after the frame, even if another route has since been placed above it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = route.navigator;
+      if (navigator != null && route.isActive) {
+        navigator.removeRoute(route, false);
+      }
+    });
+  }
+
+  Future<void> _clearUnavailableBookmarks() async {
+    if (!_allowed) {
+      _close();
+      return;
+    }
+    final repository = widget.bookmarkRepository;
+    if (!widget.savedOnly ||
+        repository == null ||
+        _busy ||
+        _cleanupConfirming ||
+        _cleanupRefreshRequired) {
+      return;
+    }
+    final actor = repository.currentActorId!;
+    final epoch = ++_epoch;
+    setState(() => _cleanupConfirming = true);
+    late final DialogRoute<bool> route;
+    void finish(bool confirmed) {
+      if (confirmed &&
+          (!_current(epoch) ||
+              !identical(_cleanupDialog, route) ||
+              !route.isCurrent)) {
+        return;
+      }
+      final navigator = route.navigator;
+      if (navigator != null && route.isActive) {
+        navigator.removeRoute(route, confirmed);
+      }
+    }
+
+    route = DialogRoute<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        scrollable: true,
+        title: const Text('Remove unavailable saved courses?'),
+        content: const Text(
+          'Only your saved references to courses that are currently unavailable will be removed. Available saved courses stay saved. Purchases and enrollments are unchanged. No hidden course details will be shown.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => finish(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => finish(true),
+            child: const Text(
+              'Remove',
+              semanticsLabel: 'Remove unavailable saved references',
+            ),
+          ),
+        ],
+      ),
+    );
+    _cleanupDialog = route;
+    bool? confirmed;
+    try {
+      confirmed = await Navigator.of(context, rootNavigator: true).push(route);
+    } finally {
+      if (identical(_cleanupDialog, route)) _cleanupDialog = null;
+      if (_current(epoch)) setState(() => _cleanupConfirming = false);
+    }
+    if (confirmed != true || !_current(epoch)) return;
+    setState(() {
+      _busy = true;
+      _cleanupCount = null;
+      _cleanupRefreshRequired = true;
+      _error = null;
+      _invalidateCards();
+    });
+    try {
+      final count = await repository.clearUnavailableBookmarks(actorId: actor);
+      if (!_current(epoch)) return;
+      if (count < 0 || count > catalogMaxInteger) {
+        throw const BookmarkFailure(BookmarkFailureKind.invalidResponse);
+      }
+      setState(() => _cleanupCount = count);
+      await _load();
+    } catch (error) {
+      if (!_current(epoch) || _fatal(error)) return;
+      setState(() {
+        _invalidateCards();
+        _error = 'Removal could not be confirmed and may already have completed. Refresh saved courses before another change. No automatic retry was sent.';
+      });
+    } finally {
+      if (_current(epoch)) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _changeBookmark(bool saved) async {
     if (!_allowed) {
       _close();
       return;
     }
     final repository = widget.bookmarkRepository;
-    if (_busy || repository == null || _bookmark == null || _course == null) {
+    if (_busy ||
+        _cleanupConfirming ||
+        _cleanupRefreshRequired ||
+        repository == null ||
+        _bookmark == null ||
+        _course == null) {
       return;
     }
     final epoch = ++_epoch;
@@ -292,7 +407,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       _close();
       return;
     }
-    if (_busy && more) return;
+    if (_cleanupConfirming || (_busy && more)) return;
     final after = more ? _sessions?.nextCursor : null;
     if (more && after == null) return;
     final epoch = ++_epoch;
@@ -443,9 +558,19 @@ class _CatalogScreenState extends State<CatalogScreen>
     if (widget.savedOnly) ...[
       const Text(bookmarkDisclaimer),
       TextButton(
-        onPressed: _busy ? null : () => _load(),
+        onPressed: _busy || _cleanupConfirming ? null : () => _load(),
         child: const Text('Refresh saved courses'),
       ),
+      TextButton(
+        onPressed: _busy || _cleanupConfirming || _cleanupRefreshRequired
+            ? null
+            : _clearUnavailableBookmarks,
+        child: const Text('Remove unavailable saved courses'),
+      ),
+      if (_cleanupCount != null)
+        _status(
+          'Removed $_cleanupCount unavailable saved course${_cleanupCount == 1 ? '' : 's'}.',
+        ),
     ],
     if (!widget.savedOnly) ...[
       TextField(
@@ -547,7 +672,9 @@ class _CatalogScreenState extends State<CatalogScreen>
               Text('${course.category} · ${course.level}'),
               Text('${formatPricePiasters(course.pricePiasters)} EGP'),
               OutlinedButton(
-                onPressed: _busy ? null : () => _details(course.id),
+                onPressed: _busy || _cleanupConfirming
+                    ? null
+                    : () => _details(course.id),
                 child: Text('View course: ${course.title}'),
               ),
             ],
@@ -556,7 +683,9 @@ class _CatalogScreenState extends State<CatalogScreen>
       ),
     if (_page?.hasMore == true && !_dirty)
       OutlinedButton(
-        onPressed: _busy || _error != null ? null : () => _load(more: true),
+        onPressed: _busy || _cleanupConfirming || _error != null
+            ? null
+            : () => _load(more: true),
         child: const Text('Load more courses'),
       ),
   ];
