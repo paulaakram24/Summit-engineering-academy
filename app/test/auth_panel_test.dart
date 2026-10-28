@@ -103,6 +103,201 @@ void main() {
       expect(repo.calls, isNot(contains('password')));
     },
   );
+  testWidgets('recovery displays the current repository email', (tester) async {
+    repo.hasSession = true;
+    repo.recovery = true;
+    repo.email = 'learner@example.test';
+    await tester.runAsync(auth.start);
+    await show(tester);
+
+    expect(auth.stage, AuthStage.recovery);
+    expect(
+      find.text('Resetting password for learner@example.test'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(TextFormField, 'Email'), findsNothing);
+    expect(find.widgetWithText(TextFormField, 'New password'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextFormField, 'Confirm password'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Update password'),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    expect(repo.calls, isEmpty);
+  });
+
+  for (final entry in <String, String?>{
+    'null': null,
+    'empty': '',
+    'blank': '   ',
+    'invalid': 'not-an-email',
+  }.entries) {
+    testWidgets(
+      'recovery with ${entry.key} email blocks password entry and allows cancel',
+      (tester) async {
+        repo.hasSession = true;
+        repo.recovery = true;
+        repo.email = entry.value;
+        await tester.runAsync(auth.start);
+        await show(tester);
+
+        expect(auth.stage, AuthStage.recovery);
+        expect(
+          find.text(
+            'Recovery account could not be verified. Cancel and request a new reset link.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Resetting password for'), findsNothing);
+        expect(find.byType(TextFormField), findsNothing);
+        expect(find.text('Update password'), findsNothing);
+        final cancel = find.widgetWithText(FilledButton, 'Cancel and sign out');
+        expect(cancel, findsOneWidget);
+        expect(tester.widget<FilledButton>(cancel).onPressed, isNotNull);
+        expect(repo.calls, isEmpty);
+
+        await tester.runAsync(() async {
+          await tester.tap(cancel);
+          await auth.settled;
+        });
+        await tester.pumpAndSettle();
+
+        expect(auth.stage, AuthStage.signedOut);
+        expect(repo.hasSession, isFalse);
+        expect(repo.recovery, isFalse);
+        expect(repo.calls, ['localSignOut']);
+      },
+    );
+  }
+
+  testWidgets('email changes during recovery clear both password inputs', (
+    tester,
+  ) async {
+    repo.hasSession = true;
+    repo.recovery = true;
+    repo.email = 'learner@example.test';
+    await tester.runAsync(auth.start);
+    await show(tester);
+
+    final password = find.widgetWithText(TextFormField, 'New password');
+    final confirm = find.widgetWithText(TextFormField, 'Confirm password');
+    await tester.enterText(password, 'synthetic-password-one');
+    await tester.enterText(confirm, 'synthetic-password-two');
+    expect(
+      tester.widget<TextFormField>(password).controller!.text,
+      'synthetic-password-one',
+    );
+    expect(
+      tester.widget<TextFormField>(confirm).controller!.text,
+      'synthetic-password-two',
+    );
+
+    repo.email = 'another-learner@example.test';
+    repo.emit(SessionEvent.recovery);
+    await tester.pumpAndSettle();
+
+    expect(auth.stage, AuthStage.recovery);
+    expect(
+      find.text('Resetting password for another-learner@example.test'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Resetting password for learner@example.test'),
+      findsNothing,
+    );
+    expect(tester.widget<TextFormField>(password).controller!.text, isEmpty);
+    expect(tester.widget<TextFormField>(confirm).controller!.text, isEmpty);
+    expect(repo.calls, isEmpty);
+  });
+
+  testWidgets(
+    'stale recovery Update callback clears inputs without updating after email changes without notification',
+    (tester) async {
+      repo.hasSession = true;
+      repo.recovery = true;
+      await tester.runAsync(auth.start);
+      await show(tester);
+
+      final password = find.widgetWithText(TextFormField, 'New password');
+      final confirm = find.widgetWithText(TextFormField, 'Confirm password');
+      const syntheticPassword = 'synthetic-matching-password';
+      await tester.enterText(password, syntheticPassword);
+      await tester.enterText(confirm, syntheticPassword);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextFormField>(password).controller!.text,
+        syntheticPassword,
+      );
+      expect(
+        tester.widget<TextFormField>(confirm).controller!.text,
+        syntheticPassword,
+      );
+      final staleUpdate = tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Update password'),
+          )
+          .onPressed!;
+
+      // Change the live account without emitting an event or pumping a rebuild.
+      repo.email = 'another-learner@example.test';
+      expect(
+        find.text('Resetting password for learner@example.test'),
+        findsOneWidget,
+      );
+      staleUpdate();
+      await tester.pumpAndSettle();
+
+      expect(repo.calls, isEmpty);
+      expect(auth.stage, AuthStage.recovery);
+      expect(tester.widget<TextFormField>(password).controller!.text, isEmpty);
+      expect(tester.widget<TextFormField>(confirm).controller!.text, isEmpty);
+      expect(
+        find.text('Resetting password for another-learner@example.test'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('session vanishes during recovery hides password entry', (
+    tester,
+  ) async {
+    repo.hasSession = true;
+    repo.recovery = true;
+    await tester.runAsync(auth.start);
+    await show(tester);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+
+    repo.hasSession = false;
+    repo.emit(SessionEvent.recovery);
+    await tester.pumpAndSettle();
+
+    expect(auth.stage, AuthStage.recovery);
+    expect(
+      find.text(
+        'Recovery account could not be verified. Cancel and request a new reset link.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Resetting password for'), findsNothing);
+    expect(find.byType(TextFormField), findsNothing);
+    expect(find.text('Update password'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Cancel and sign out'),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    expect(repo.calls, isEmpty);
+  });
+
   testWidgets('server admin role is displayed without a role selector', (
     tester,
   ) async {

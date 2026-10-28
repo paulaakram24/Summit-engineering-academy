@@ -1,124 +1,146 @@
 # Summit Engineering Academy
 
-Summit Engineering Academy is a mobile learning app where students browse courses, purchase individual sessions or complete courses, access protected videos and materials, submit assignments, and track progress. Admins manage students, courses, sessions, content, payments, access, notifications, and audit logs.
+## Current verified source milestone — 2026-10-28
 
-## Planned stack
+Owner-approved milestone prepared for push: administrator PDF/TXT quarantine uploads,
+instructor receiving-detail setup, saved appearance settings, and authentication
+improvements. Fresh checks passed **1,035 Flutter tests**, **122 offline Node tests**,
+clean analysis, 86-file formatting, locked dependencies and an Android debug build
+(113.4s). Independent Agency-guided reviews completed; personal test-mailbox
+identities were removed from pending public notes.
 
-Latest verified local checkpoint (2026-10-21): closed private pending-order foundation deployed and checked with 814 backend assertions; strict models and read-only own-history transport bring app tests to 652, analysis/formatting and Android debug build passed. Creation is explicitly disabled; no checkout, payment, receipts or learning grants are enabled. No order UI/runtime integration yet. New work is unpushed; last remote checkpoint is b97aba4. See PROJECT_STATUS.md and docs/MORNING_QUESTIONS.md.
+Checkout, payment approval, trusted file attachment and student delivery remain
+closed. No production APK release is implied. GitHub CI for this source milestone
+is pending; the earlier 992 database assertions are historical, not a new local run.
+The physical Huawei admin restart passed without ending any existing session.
+Its latest-build update is deferred while the phone reports1% battery.
+See [project status](PROJECT_STATUS.md) for current evidence and open gates.
 
-2026-10-21 follow-up: initial Saved courses milestone was pushed as `b97aba4` and both GitHub workflows passed. Separate local cleanup now supports confirmed removal of unavailable saved references without exposing hidden course data or changing purchases. Development checks passed 744 backend assertions, 585 app tests and Android build; emulator zero-row confirmation/cancel accepted. This cleanup is unpushed; populated/student/release checks stay open. See PROJECT_STATUS.md for exact artifact and later evidence.
+## Earlier verification notes
 
-Latest development increment (2026-10-20): **Saved courses** adds account-backed save/remove and a separate saved list, explicitly not purchases/enrollment. Version checks reject stale writes; only published course metadata is returned. Development backend checks passed 715 assertions; app checks passed 561 tests, analysis/formatting and an Android debug build. Current APK installed/hash-verified on emulator; admin empty/background behavior accepted, not populated persistence or student acceptance. Hidden-reference management remains open. See `docs/SAVED_COURSES_DESIGN.md` and `PROJECT_STATUS.md`. This increment is unpushed. Initial production channel is direct Android with manual InstaPay/Vodafone Cash; production signing/download/update gates remain open.
+The following checkpoint notes retain their original scope and historical results;
+their statements about unpushed work describe those earlier increments.
 
-Current checkpoint (2026-10-20): catalog accessibility follow-up passes 487 app tests, clean analysis/formatting and an Android debug build. Owner-controlled emulator checks accepted administrator login/restart and private cover rendering; temporary content was archived afterward without deleting its cover/material. Catalog/admin-session runtime was pushed as `3efd651`, followed by acceptance notes `9b4e8de`; the owner has now approved the pending accessibility/requirements milestone. See PROJECT_STATUS.md for its actual push/CI outcome. Older checkpoint paragraphs below are historical. Commerce, student entitlements, protected playback, native TalkBack and signed-release acceptance remain unfinished. Bundles are editable admin/instructor-selected sessions; membership changes apply to both existing and new buyers.
+Latest form fix: opening the keyboard no longer refreshes credential/profile
+entry forms on the tested emulator. Real background and protected-workspace
+access checks remain active. All1,030serial app tests, analysis and formatting
+passed; installedE7DEFAndroidbuild retained keyboard focus and unsaved typing.
+The synthetic draft was cleared without saving. Owner profile completion and
+other Phase1gates remain open. See [focus verification](docs/PHASE1_FORM_FOCUS.md).
+Nothing in this increment was pushed.
 
-- Flutter stable, Dart
-- Flutter Material 3 with a responsive Student/Admin design system
-- GoRouter or equivalent typed navigation
-- Supabase Auth and PostgreSQL
-- Supabase Storage for controlled files and payment receipts
-- Supabase Edge Functions for privileged workflows
-- Cloudflare Stream for private video playback (selected; integration pending)
-- Firebase Cloud Messaging/APNs through a Flutter push-notification package
+Latest recovery improvement: the reset form identifies the active account
+before password entry and blocks unidentified sessions. Main passed1,025app
+tests, analysis, formatting and the Android build. Installed3FE756artifact
+visibly showed the test account; owner privately completed password update and
+fresh login. Normal student logout/server termination and signed-out restart
+also passed. Remaining callback/multi-device/physical gates keep Phase1open;
+no password was entered by the agent and no push was performed.
+Exact evidence is in [project status](PROJECT_STATUS.md).
 
-## Brand asset
+Latest app correction: uncertain upload/status checks no longer falsely claim
+an empty history. Four new regression tests pass; final local checks passed
+**1,017 app tests**, clean analysis, locked dependencies and formatting.
+Android debug build succeeded in57.6s; later614040update/launch-only acceptance
+on the emulator retained Administrator home with matching installed hash.
+Native uncertain-upload acceptance remains open; nothing is pushed.
+Live scanning/student delivery remain
+closed. See [project status](PROJECT_STATUS.md) for the exact artifact and gates.
 
-The supplied official logo is stored at `assets/sea-logo.png`. Use it as the primary app logo and source artwork for the splash screen, authentication screens, profile/admin branding, and app-store icon variants. Preserve the navy, teal, and gold palette; do not redraw or alter the logo artwork without approval.
+Latest offline groundwork: [material byte-observation prototype](tools/material-validation/README.md)
+passes122local tests and syntax checks on Node25.7.0. This is synthetic-stream
+hashing/bounds testing only, not an isolated scanner or server-file validation.
+All outcomes deny readiness; live delivery remains closed. New Node22 CI is
+defined but unrun remotely; no push or app/backend change in this increment.
+The reviewed [worker isolation acceptance plan](docs/MATERIAL_WORKER_ISOLATION_ACCEPTANCE.md)
+records the missing local Linux runtime and remaining safeguards; no installation,
+scanner or live file read was enabled.
 
-## Local setup
+SEA is a Flutter mobile learning app for students and administrators. The planned product supports courses, individual sessions, editable admin-selected session bundles, protected learning materials, assignments and manually verified payments.
 
-Latest accepted checkpoint: `3efd651` was approved and pushed as Paula; GitHub Flutter and Backend workflows both passed. Subsequent emulator/admin populated-catalog checks passed with a temporary synthetic course/session, both archived afterward. Zero published test courses remain. This is not student, Huawei, positive-image or release acceptance; current follow-up evidence is in `PROJECT_STATUS.md` and `docs/PHASE2_DEVICE_ACCEPTANCE.md`.
+### Earlier repository checkpoints
 
-Development backend is deployed. Google sign-in, required profile save, first administrator, session restoration, administrator course/session/material authoring and private course-cover lifecycle are verified on Huawei within the documented debug scope. Temporary test content remains unpublished and recoverably deleted. `ROADMAP.md` is the canonical phase sequence; `PROJECT_STATUS.md` records evidence and open gates. Email delivery/recovery, other identity acceptance, protected media, purchases, iOS and signed release acceptance remain incomplete.
+Approved milestone `bb617fa` was pushed on 2026-10-21 with Paula as author. Fresh local verification passed **652 app tests**, **814 database assertions**, clean analysis/formatting and a configured Android debug build. GitHub outcomes are recorded separately in [PROJECT_STATUS.md](PROJECT_STATUS.md); local results do not imply remote success.
 
-Latest follow-up (2026-10-20): **Browse courses** implements read-only published course cards/details/session outlines, server-side literal search, category/level filters and stable cursor pages, with authenticated image covers/fallback and identity/lifecycle invalidation. Main passed 453 app tests, 585 hosted database assertions, clean analysis/format and configured Android debug build. Installed on Huawei; empty catalog, no-match search/clear, background closure and reopening verified. Populated/native student/cover acceptance remains open because nothing is published; no purchase or playback is enabled. See `docs/CATALOG_IMPLEMENTATION.md` and `docs/PHASE2_DEVICE_ACCEPTANCE.md`. This catalog increment remains unpushed; preceding material-editor commit `f79f359` passed both remote workflows.
+Both GitHub workflows for bb617fa passed. A separate local appearance increment now remembers System/Light/Dark across restarts: 678 app tests, analysis/formatting and Android build passed; bounded emulator persistence accepted and original System selection restored. This follow-up is **not pushed** and does not close broader device/release gates. See [appearance verification](docs/APPEARANCE_PREFERENCES.md).
 
-Local revision after the device checkpoint above: 466 passing app tests, clean analysis/49-file formatting and configured Android rebuild (9.2s), including a regression-verified stale-card fix after confirmed course withdrawal. That APK is now installed and visually checked on the Android Studio emulator; Huawei retains the previous build. Owner reported emulator admission blocked by the old universal session limit and clarified that admins must be exempt. Current policy is unlimited devices/simultaneous sessions for enabled server-authorized admins; students retain two registered devices and one active session. Deployment and retry evidence is recorded in `PROJECT_STATUS.md`; do not infer authenticated emulator acceptance from installation. Catalog follow-up remains unpushed.
+Latest unpushed setup checkpoint: private instructor receiving profiles/course binding are deployed to development, with earlier 893-assertion database evidence. Actor-pinned transport and administrator receiving-details/course-assignment screens are now connected: 834 app tests, clean analysis/formatting and configured Android debug build. Receiving fields are number and recipient name only; same-course bundles must inherit one instructor. Real-value/native mutation acceptance, bundle enforcement and changed-destination review transitions remain open. No real receiving values, course bindings or orders were created during setup acceptance. See [instructor setup](docs/INSTRUCTOR_PAYMENTS.md) and exact artifact/device evidence in [status](PROJECT_STATUS.md).
 
-From `app/`, use the pinned Flutter SDK and run:
+Latest local upload increment: administrator PDF/TXT file selection and private quarantine-upload controls are integrated. The new development backend passed all eleven suites / 992 assertions before and after deployment; the integrated app passed 978 tests, analysis and formatting. Final build/native acceptance is recorded separately in status. Files are not yet validated, attached, published or available to students. See [material uploads](docs/MATERIAL_FILE_UPLOADS.md). Nothing in this increment is pushed.
+
+Follow-up: native synthetic TXT selection, confirmation cancellation and discard/reopen accepted without cloud upload. An abnormal-provider deadline/cancellation fix passed **1001 app tests**, analysis and formatting; its exact build/device evidence is tracked in status. [Quarantine cleanup design](docs/MATERIAL_UPLOAD_CLEANUP_DESIGN.md) is design only: no deletion or automatic retention is enabled.
+
+2026-10-24 bounded native acceptance: an isolated synthetic draft received an actual194-byte TXT upload through the normal app; server quarantine status/Storage metadata matched and reopening freshly listed it. Anonymous object access was denied. One private synthetic object is retained/tracked; trusted validation/student delivery and broader acceptance remain open. See [binary acceptance](docs/MATERIAL_UPLOAD_BINARY_ACCEPTANCE.md). No new push.
+
+Latest fresh checks: **1013 app tests**, **992 database assertions**, clean analysis/locked dependencies and84-file formatting. The12new tests exercise the full picker/navigation/admission hierarchy. This test-only follow-up changes no production code; the installed8AC77artifact remains the accepted TXT-transfer debug build, not a production release.
+
+Later restart acceptance on8AC77 restored Administrator home and freshly loaded uploaded statuses. Current inventory is **two** distinct private194-byte TXT objects (388declared-observed bytes), both unvalidated; the additional operation predates that read-only run and was preserved without attribution. [Trusted validation/attachment design](docs/MATERIAL_VALIDATION_DESIGN.md) defines the next boundaries but enables no scanner, read access or student delivery. No new suite/build run or push is implied by this documentation/native follow-up.
+
+Implemented: Google sign-in and required name/phone/university profile, server-controlled roles and device/session admission, administrator course/session/material metadata authoring, private covers, published catalog/search/filters, and account-backed Saved courses with confirmed unavailable-reference cleanup. Huawei/emulator acceptance is limited to the exact flows/artifacts recorded in status.
+
+Private pending-order contracts and read-only history transport are verified, but **creation is disabled** and no order UI is connected. Checkout, receipt upload, approval, refunds, entitlements and protected learning remain unfinished. A pending intent is not payment received or learning access.
+
+Initial release direction is direct Android installation with student-selected InstaPay/Vodafone Cash, transaction screenshot and administrator verification of actual received funds. No production APK has been released. Signing, identifiers, download/update hosting and release acceptance remain open; public-store/iPhone distribution is deferred.
+
+See [ROADMAP.md](ROADMAP.md) for phases and [morning decisions](docs/MORNING_QUESTIONS.md) for the resolved commerce policies and remaining acceptance gates. Historical checkpoints belong in status/changelog rather than duplicated README summaries.
+
+## Stack and assets
+
+- Flutter 3.47.7 / bundled Dart 3.13.5, Material 3 and feature-oriented modules under `app/lib/`.
+- Supabase Auth, PostgreSQL/RLS and private Storage; migrations/tests under `supabase/`.
+- Server-side privileged workflows, never mobile service-role credentials.
+- Cloudflare Stream selected; private video integration pending. Push/WhatsApp integration also pending.
+- Official logo: `assets/sea-logo.png`. Preserve its navy/teal/gold artwork; do not redraw without approval.
+
+## Run locally
+
+Use the pinned Flutter SDK and an Android SDK/emulator or connected debugging-enabled phone. From `app/`:
 
 ```powershell
 flutter pub get --enforce-lockfile
+dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
 flutter run --dart-define-from-file=config/development.json
 ```
 
-The development JSON contains only a public URL and publishable key. Never add server secrets to it. Without these build defines the app deliberately shows the unconfigured foundation screen. Configuration errors fail closed.
+The machine-local development JSON contains only `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`: the intended project's HTTPS URL and publishable key. Never put backend secrets there or overwrite current configuration unnecessarily. Missing defines show the foundation screen; invalid configuration fails closed.
 
-On the current Windows development PC, the verified configured build/check command from the repository root is:
+On this Windows PC, the accepted configured check/build command from the repository root is:
 
 ```powershell
 ./scripts/check.ps1 -Flutter 'C:/src/flutter/bin/flutter.bat' -BuildAndroid -DartDefineFile config/development.json -GradleUserHome 'E:/Android-prerequisites-Summit/gradle-physical' -JavaHome 'C:/Program Files/Microsoft/jdk-17.0.20.101-hotspot'
 ```
 
-These machine-specific paths are command arguments, not global settings. The script restores its environment after completion. Use ordinary physical directories for the Gradle cache on this pinned Gradle 9.3.1 Windows setup: linked cache paths caused Kotlin DSL failures consistent with [Gradle issue 36483](https://github.com/gradle/gradle/issues/36483). Tests, analysis, configured APK build, and emulator installation passed on 2026-10-18. See PROJECT_STATUS.md for remaining live-auth and physical-device checks.
+Use the established E: temporary directory when C: space is constrained. Cache/JDK paths are command arguments, not global settings; the script restores its Gradle environment. Debug output is `app/build/app/outputs/flutter-apk/app-debug.apk`, not a signed production release.
 
-Backend migrations are under `supabase/migrations/`; hosted dev migration versions match local filenames. The owner connected Supabase to GitHub; inspect that integration before any push/deployment, and do not create paid branches. SQL regression instructions are in `docs/PHASE1_DATABASE_TESTS.md`; execute the entire rollback-based suite, not fragments. Backend CI passed on checkpoint `975bf67` using a disposable local backend. The hosted development suite passed 84/84 again on 2026-10-18 after administrator provisioning; follow-up changes remain local and require fresh push approval.
+iOS build/runtime acceptance requires macOS/Xcode/CocoaPods and remains unverified. Do not infer it from source inspection or Android checks.
 
-Owner setup: `docs/GOOGLE_SIGN_IN_SETUP.md` and `docs/PHASE1_PLATFORM_CHECKLIST.md`. Architecture and access controls: `docs/PHASE1_BACKEND.md`. Administrator provisioning is deliberately server-only and requires the owner to register/verify first.
+## Backend checks
 
-Content contracts and upload boundaries: `docs/CONTENT_CONTRACT.md`. Content denial/constraint tests: `docs/PHASE2_DATABASE_TESTS.md` and `supabase/tests/phase2_content.sql`. Development migration `20261018154932_phase2_content_core` matches hosted history. The expanded backend workflow runs both identity and content suites after the next approved push; hosted execution of this new workflow is not yet verified.
+Development migration history matches `supabase/migrations/`. Inspect the owner's GitHub/Supabase integration before deployment; do not create paid branches or reset hosted data for tests.
 
-Private covers (2026-10-19): see `docs/COURSE_COVER_DESIGN.md` and deployed migration `20261019015308_phase2_private_covers`. Picker/private preview UI and administrator real binary workflow are accepted on Huawei; both temporary uploads were cleaned through Storage API and the original logo retained. Historical cover/content/identity database suites passed 267 assertions. Latest app analysis, all 310 tests, formatting and configured Android build pass, including 105 admin-material client checks after actor-bound retry correction. The workflow additionally runs `supabase/tests/phase2_covers.sql`. Follow-up changes remain unpushed pending fresh approval. Approved student-discovery/library improvements are specified in `docs/STUDENT_EXPERIENCE.md`, not yet implemented.
+[Backend CI](.github/workflows/backend-checks.yml) starts a disposable backend and runs eleven SQL suites with stop-on-error: identity, admin sessions, content, covers, materials, upload quarantine, catalog, bookmarks, cleanup, closed pending orders and private instructor-payment setup. Execute each complete file on one connection, including transaction/rollback, not fragments. Hosted rollback evidence does not prove fresh-reset or real parallel-transaction behavior; the new setup/upload workflow steps have not run remotely before an approved push.
 
-Admin materials backend (2026-10-19): migration `20261019154009_phase2_admin_materials.sql` is deployed to development; main verified 163 material assertions and the 267 existing regressions (430 total), with fixture cleanup confirmed. The backend workflow includes `supabase/tests/phase2_materials.sql` and passed on approved foundation `5fa6d4a`. Actor-bound client retries and the later administrator editor are verified locally; that editor remains unpushed. See `docs/PHASE2_MATERIALS.md` and `docs/ADMIN_MATERIAL_EDITOR.md`; neither enables student file/video access. Next published-catalog boundaries are recorded in `docs/CATALOG_IMPLEMENTATION.md` (design, not implemented).
+The [October 30 grant-notice assessment](docs/SUPABASE_OCTOBER_2026_NOTICE.md) explains explicit grants and RLS as separate boundaries. Never apply blanket permissions to make a table reachable. Order creation remains closed at both entry points, including to service_role.
 
-Verified local toolchain: Flutter 3.47.7 and Dart 3.13.5 at C:/src/flutter. Application source is in app/. Run flutter pub get, flutter analyze, flutter test, and flutter run from app/. Required environment variables must be listed in .env.example when integrations are added; secrets must never be committed.
+## Security and operating rules
 
-Expected setup sequence:
+Authorization, active admission, authoritative roles and ownership are enforced server-side. Students have two registered installations and one active application session maximum; enabled admins are exempt. Never alter the owner's role/session just to advance testing.
 
-1. Install dependencies.
-2. Create/configure the Supabase project.
-3. Apply migrations and seed only non-sensitive development data.
-4. Configure storage buckets, auth providers, Edge Functions, and video-provider credentials.
-5. Start the Flutter app on an Android emulator or connected device.
-6. Run type checks, linting, unit tests, integration tests, and a security checklist.
+Private covers and saved courses grant no paid-material access. Do not fabricate ownership from pending intents. Actual funds verification and audited approval/access integration are still required.
 
-## Security
+Keep passwords, SMTP app passwords, OAuth secrets, service keys, signing keys, tokens and full OAuth URLs out of source/logs/chat. Use approved local/backend/CI secret storage. Parent-project `sources/` files are read-only references.
 
-All authorization must be enforced server-side with Supabase RLS and Edge Functions. The client must never decide whether a student owns access. Payment approval, access grants, signed video URLs, device registration, and admin actions must be audited.
+Every additional milestone push needs fresh explicit owner approval after testing. A debug build or repository push is not production-release approval.
 
 ## Documentation
 
-- `docs/CATALOG_IMPLEMENTATION.md` and `docs/CATALOG_DATABASE_TESTS.md` document the verified catalog boundary and remaining physical gates.
-- `docs/ENTITLEMENTS_DESIGN.md` proposes the next commerce/access-state contract; it is not an implemented payment or entitlement service.
-
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) tracks delivery state and decisions.
-- [CHANGELOG.md](CHANGELOG.md) records user-visible and security-relevant changes.
-- The master implementation instructions are in `MASTER_BUILD_PROMPT.md`.
-- `REFERENCE_ANALYSIS.md` records permitted product lessons from the Leader_Academy public App Store listing.
-
-## Recommended downloads before implementation
-
-- Git for repository work.
-- Flutter stable SDK, including its bundled Dart SDK and DevTools.
-- Android Studio and an Android emulator, plus Xcode on a macOS machine for iOS builds.
-- CocoaPods on macOS for iOS dependencies.
-- Supabase CLI for migrations and local development.
-- A Mux or Cloudflare Stream account for private video playback.
-- Accounts/credentials for email, push notifications, and any approved WhatsApp notification provider.
-
-Do not download production credentials, paid media, or payment secrets into the repository. Create `.env.example` only; real values belong in local secret storage or CI/CD secrets.
-
-## Migration decision and risks
-
-The plan is now Flutter/Dart instead of React Native/Expo/TypeScript. Flutter gives one consistent rendering layer across Android and iOS, strong control over the colorful branded UI, and a straightforward release path. The tradeoff is replacing the JavaScript/Expo toolchain and selecting Flutter equivalents for navigation, secure storage, media playback, notifications, analytics, and testing.
-
-Before coding, verify `flutter doctor`, Android emulator/device builds, and an iOS Simulator build on macOS. Confirm package compatibility for Supabase, secure storage, video playback, file picking, push notifications, Google sign-in, and signed playback URLs. Keep payment verification server-side in Supabase Edge Functions; Flutter only submits requests and displays states.
-
-### Exact next steps
-
-1. Install Flutter stable and run `flutter doctor -v`.
-2. Install Android Studio, SDK tools, an emulator, and accept Android licenses.
-3. On macOS, install Xcode and CocoaPods, then validate an iOS simulator build.
-4. Create the Flutter project structure without implementing business features.
-5. Add Supabase configuration through secret-safe environment handling.
-6. Prototype authentication and role loading only.
-7. Validate private video playback and signed URL expiry on both platforms.
-8. Validate the student two-device/one-active-session policy, admin unlimited-device/simultaneous-session exception, and manual-payment state machine.
-9. Only after these checks, begin the first vertical slice.
-
-## Current prerequisite audit
-
-Already available on the Windows PC: Git, Android Studio, OpenJDK 17, VS Code, GitHub CLI, and Android SDK directories. Not yet verified: Flutter/Dart, Supabase CLI, ADB/emulator launch, Cloudflare Stream, Gmail SMTP, Meta WhatsApp Cloud API, Supabase project, and store accounts. iOS builds cannot be verified until a Mac with Xcode is available.
+- [Status](PROJECT_STATUS.md), [roadmap](ROADMAP.md), [changelog](CHANGELOG.md): current evidence, phases and history.
+- [Master build prompt](MASTER_BUILD_PROMPT.md), [requirements](REQUIREMENTS_CORRECTIONS.md): implementation instructions and clarifications.
+- [Google setup](docs/GOOGLE_SIGN_IN_SETUP.md), [platform checklist](docs/PHASE1_PLATFORM_CHECKLIST.md), [backend architecture](docs/PHASE1_BACKEND.md): setup and identity/access gates.
+- [Catalog](docs/CATALOG_IMPLEMENTATION.md), [Saved courses](docs/SAVED_COURSES_DESIGN.md), [device acceptance](docs/PHASE2_DEVICE_ACCEPTANCE.md): discovery boundaries and actual native evidence.
+- [Material editor](docs/ADMIN_MATERIAL_EDITOR.md): admin metadata authoring, not student delivery.
+- [Pending-order foundation](docs/PENDING_ORDERS_FOUNDATION.md), [entitlement design](docs/ENTITLEMENTS_DESIGN.md): staged contracts, not implemented payment/access flows.
+- [Audit handoff](docs/PHASE3_STAGED_AUDIT_HANDOFF.md): independent Claude Code instructions, not an executed audit.
+- [Student experience](docs/STUDENT_EXPERIENCE.md), [reference analysis](REFERENCE_ANALYSIS.md): permitted product lessons, not copied implementation.

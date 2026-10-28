@@ -95,6 +95,13 @@ class CourseImageSelection {
     AuthController auth,
     Future<Uint8List?> Function(Future<void> Function() onPickerReturned)
     select,
+  ) => runValue<Uint8List>(auth, select);
+
+  /// Shared native-document handoff. Only the system picker bypasses ordinary
+  /// background locking; all returned values still require fresh admission.
+  static Future<T?> runValue<T>(
+    AuthController auth,
+    Future<T?> Function(Future<void> Function() onPickerReturned) select,
   ) async {
     final access = auth.access;
     if (access?.role != 'admin' ||
@@ -138,7 +145,7 @@ class CourseImageSelection {
     _running.add(auth);
     _active.add(auth);
     try {
-      Uint8List? selected;
+      T? selected;
       Object? failure;
       try {
         selected = await select(pickerReturned);

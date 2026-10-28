@@ -135,7 +135,7 @@ SELECT pg_temp.catalog_check('default argument counts match contract',$test$ SEL
 SELECT pg_temp.catalog_check('material base still admin-only policy',$test$ SELECT count(*)=1 AND bool_and(cmd='SELECT' AND qual LIKE '%private.is_admin()%') FROM pg_policies WHERE schemaname='public' AND tablename='session_materials' $test$);
 SELECT pg_temp.catalog_check('private material tables remain closed',$test$ SELECT NOT has_table_privilege('authenticated','private.material_payloads','SELECT,INSERT,UPDATE,DELETE') AND NOT has_table_privilege('authenticated','private.material_operations','SELECT,INSERT,UPDATE,DELETE') $test$);
 SELECT pg_temp.catalog_check('material storage and receipt buckets remain private',$test$ SELECT count(*)=3 AND bool_and(NOT public) FROM storage.buckets WHERE id IN ('course-materials','assignment-submissions','payment-receipts') $test$);
-SELECT pg_temp.catalog_check('only existing cover Storage policies allowed',$test$ SELECT NOT EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete')) $test$);
+SELECT pg_temp.catalog_check('only existing cover Storage policies allowed',$test$ SELECT NOT EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete','material_upload_quarantine_insert')) $test$);
 
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.catalog_check('admin authoring still sees fictional drafts',$test$ SELECT count(*)=3 FROM public.courses WHERE id IN ('f2c0e400-0000-4000-8000-000000000226','f2c0e400-0000-4000-8000-000000000227','f2c0e400-0000-4000-8000-000000000228') $test$);

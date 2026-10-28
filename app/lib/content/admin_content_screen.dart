@@ -7,6 +7,9 @@ import 'course_cover_panel.dart';
 import 'course_image_selector.dart';
 import 'material_repository.dart';
 import 'admin_materials_panel.dart';
+import 'material_file_upload_repository.dart';
+import '../commerce/instructor_payment_repository.dart';
+import '../commerce/course_payment_instructor_panel.dart';
 
 bool _canManage(AuthController auth) =>
     auth.stage == AuthStage.ready && auth.access?.role == 'admin';
@@ -19,12 +22,16 @@ class AdminContentScreen extends StatefulWidget {
     this.coverActions,
     this.imageSelector,
     this.materialRepository,
+    this.instructorPaymentRepository,
+    this.materialFileUploadRepository,
   });
   final ContentRepository repository;
   final AuthController authController;
   final CourseCoverActions? coverActions;
   final CourseImageSelector? imageSelector;
   final MaterialRepository? materialRepository;
+  final InstructorPaymentRepository? instructorPaymentRepository;
+  final MaterialFileUploadRepository? materialFileUploadRepository;
   @override
   State<AdminContentScreen> createState() => _AdminContentScreenState();
 }
@@ -45,6 +52,10 @@ class _AdminContentScreenState extends State<AdminContentScreen> {
   @override
   void didUpdateWidget(AdminContentScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.materialFileUploadRepository !=
+        widget.materialFileUploadRepository) {
+      _workspaceKey = UniqueKey();
+    }
     if (oldWidget.authController != widget.authController) {
       oldWidget.authController.removeListener(_authChanged);
       widget.authController.addListener(_authChanged);
@@ -56,6 +67,10 @@ class _AdminContentScreenState extends State<AdminContentScreen> {
       _workspaceKey = UniqueKey();
     }
     if (oldWidget.materialRepository != widget.materialRepository) {
+      _workspaceKey = UniqueKey();
+    }
+    if (oldWidget.instructorPaymentRepository !=
+        widget.instructorPaymentRepository) {
       _workspaceKey = UniqueKey();
     }
   }
@@ -80,6 +95,8 @@ class _AdminContentScreenState extends State<AdminContentScreen> {
               coverActions: widget.coverActions,
               imageSelector: widget.imageSelector,
               materialRepository: widget.materialRepository,
+              instructorPaymentRepository: widget.instructorPaymentRepository,
+              materialFileUploadRepository: widget.materialFileUploadRepository,
             ),
     ),
   );
@@ -93,12 +110,16 @@ class _AdminWorkspace extends StatefulWidget {
     this.coverActions,
     this.imageSelector,
     this.materialRepository,
+    this.instructorPaymentRepository,
+    this.materialFileUploadRepository,
   });
   final ContentRepository repository;
   final AuthController auth;
   final CourseCoverActions? coverActions;
   final CourseImageSelector? imageSelector;
   final MaterialRepository? materialRepository;
+  final InstructorPaymentRepository? instructorPaymentRepository;
+  final MaterialFileUploadRepository? materialFileUploadRepository;
   @override
   State<_AdminWorkspace> createState() => _AdminWorkspaceState();
 }
@@ -108,6 +129,7 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
   List<CourseSession> _sessions = [];
   Course? _course;
   Course? _coverCourse;
+  Course? _paymentCourse;
   CourseSession? _materialSession;
   bool _includeDeleted = false, _busy = false, _hasNext = false;
   bool _confirming = false;
@@ -131,6 +153,7 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
       _sessions = [];
       _course = null;
       _coverCourse = null;
+      _paymentCourse = null;
       _materialSession = null;
       _editingCourse = null;
       _editingSession = null;
@@ -335,6 +358,18 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
 
   @override
   Widget build(BuildContext context) {
+    if (_paymentCourse != null && widget.instructorPaymentRepository != null) {
+      return CoursePaymentInstructorPanel(
+        key: ValueKey(_paymentCourse!.id),
+        course: _paymentCourse!,
+        auth: widget.auth,
+        repository: widget.instructorPaymentRepository!,
+        onClose: () {
+          setState(() => _paymentCourse = null);
+          _load();
+        },
+      );
+    }
     if (_materialSession != null &&
         _course != null &&
         widget.materialRepository != null) {
@@ -344,6 +379,7 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
         session: _materialSession!,
         auth: widget.auth,
         repository: widget.materialRepository!,
+        uploadRepository: widget.materialFileUploadRepository,
         onClose: () {
           setState(() => _materialSession = null);
           _load();
@@ -512,6 +548,13 @@ class _AdminWorkspaceState extends State<_AdminWorkspace> {
                             : () => setState(() => _coverCourse = course),
                         child: const Text('Course cover'),
                       ),
+                      if (widget.instructorPaymentRepository != null)
+                        TextButton(
+                          onPressed: _busy || course.isDeleted
+                              ? null
+                              : () => setState(() => _paymentCourse = course),
+                          child: const Text('Payment instructor'),
+                        ),
                       TextButton(
                         onPressed: _busy || course.isDeleted
                             ? null

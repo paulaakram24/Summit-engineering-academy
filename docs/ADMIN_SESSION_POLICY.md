@@ -1,5 +1,19 @@
 # Administrator and student session policy
 
+## Physical saved-administrator restart — 2026-10-28
+
+Main directly observed Administrator home on the connected Huawei ANE-LX1, then force-stopped only SEA and relaunched it. After an initial white startup frame, Administrator home returned without another login. Read-only hosted baseline/post-restart results retained enabled administrator status, four unrevoked registered installations and the exact same four unended application-admission fingerprints. No logout, registration reset, role change, device revocation or backend mutation was performed. This accepts roadmap 1.4.6.3.4 distinct-hardware saved-administrator persistence; it does not close physical student/callback or concurrency gates.
+
+Installed Huawei base.apk SHA256 BF2CA0241F57D5591312CC808D1C6C3C0DE2E2CE8BF164F7C1C0DE2CCDD31CED differs from latest emulator artifact 7D25D5. No APK update at observed 1% battery; no new build/test-suite claim. Evidence retained outside Git: E:/Android-prerequisites-Summit/sea-huawei-app-20261028.png and E:/Android-prerequisites-Summit/sea-huawei-admin-restart-20261028.png. Private profile values and raw session identifiers are not copied into these notes.
+
+## Additional native acceptance — 2026-10-26
+
+Owner-private Google login in a new isolated Android-user installation reached Administrator home beyond the student device cap: admin registrations/admissions rose from three/three to four/four. Read-only fingerprint membership comparison preserved all three original unended admissions, with exactly one new admission. A user-11-only SEA app force-stop/relaunch restored Administrator home; a second read-only comparison preserved the exact same four admissions. Student registrations/admissions stayed two/zero. This is same-emulator app-data isolation and app-process restart, not an independent physical device or old-client UI revalidation.
+
+Owner then explicitly approved normal logout of only the new user 11 admin test session. Main observed Sign in without cleanup warning and signed-out persistence after user-11-only app restart. Read-only verification confirmed four registered installations retained, admissions four to three, and the remaining fingerprint set exactly matching all three original unended admissions. The specific test-admission row remains present with ended_at set. Student two registrations/zero admissions unchanged; no older admin logout, device revocation or direct SQL mutation.
+
+Owner subsequently supplied an Administrator home screenshot and explicitly confirmed it was the requested older already-signed-in client access check. Accept this as owner-reported UI evidence after the test-session logout, not independently established distinct hardware/AVD/user identity or an older-client restart. The screenshot shows an emulator; independent cross-device restart/persistence remains open. No fresh backend query was run for this confirmation. See PROJECT_STATUS.md and ROADMAP.md 1.4.6.3.
+
 Owner clarification, 2026-10-20: enabled, server-authorized admins may use unlimited registered installations and simultaneous sessions. Students retain at most two unrevoked installations and one active application session; an ordinary new login cannot replace that session.
 
 ## Enforcement

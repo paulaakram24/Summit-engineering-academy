@@ -76,11 +76,11 @@ Future<AuthRuntime> initializeAuth(
   final callbacks = AuthCallbackHandler(
     exchange: repository.handleCallback,
     onStart: controller.suspend,
-    onError: () => controller.lock('auth'),
+    onError: () => controller.lock('callback'),
   );
   final links = appLinks.uriLinkStream.listen(
     callbacks.receive,
-    onError: (Object _) => controller.lock('auth'),
+    onError: (Object _) => controller.lock('callback'),
   );
   try {
     final initial = await appLinks.getInitialLink();

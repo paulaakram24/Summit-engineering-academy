@@ -1,8 +1,12 @@
 # Closed order foundation and saved-reference cleanup — audit handoff
 
-Prepared 2026-10-21. This is an independent audit request, **not an executed Claude Code audit**, payment readiness or Phase 3 completion. Read the newest PROJECT_STATUS.md first. Latest pushed checkpoint is b97aba4; review the working tree **including untracked files**. Do not edit, commit, push, change roles/sessions, publish courses, enable creation privileges or mutate hosted data during review.
+Prepared 2026-10-21. This is an independent audit request, **not an executed Claude Code audit**, payment readiness or Phase 3 completion. Read the newest PROJECT_STATUS.md first. Cleanup and closed-order work is now pushed as bb617fa; review that snapshot and relevant later working-tree changes **including untracked files**, without treating unrelated appearance work as payment implementation. Do not edit, commit, push, change roles/sessions, publish courses, enable creation privileges or mutate hosted data during review.
 
 ## Scope
+
+- Latest client setup scope: instructor_payment_repository.dart, supabase_instructor_payment_repository.dart, both instructor setup panels and tests, plus main.dart/AuthPanel/AdminContentScreen wiring. Main passed 834 tests, clean analysis/formatting and configured Android debug build; exact final artifact/native limits are in PROJECT_STATUS.md. Trace initiating JWT pinning, A–B–A rejection, exact CAS acknowledgments, private-field clearing, uncertain result manual refetch, owned/current-route confirmation callbacks and required-field readability. The bounded review's retained assignment-dialog pop was fixed with regression tests; this is not an independent Claude Code execution. Receiving-change request pauses/bundles remain unimplemented.
+
+- Latest additional setup scope: docs/INSTRUCTOR_PAYMENTS.md, migration 20261021085143_phase3_instructor_payments.sql, supabase/tests/phase3_instructor_payments.sql, app/lib/commerce/instructor_payment_models.dart and model tests. All ten suites passed preflight/postdeployment (893 assertions, 79 setup); full app 710 tests/build passed. Own-only receiving profile, explicit course binding and metadata-only directory must not leak phone/recipient information, infer a payee from creator/display text, or enable old order creation. Check same-course bundle/paused-request policies as requirements, not implemented transitions. No real receiving values/assignments/orders were created. Source review corrected initial binding serialization and display-name validation before acceptance; true parallel interleavings remain open.
 
 - Saved-reference cleanup: migration 20261021001423_phase2_bookmark_cleanup.sql, supabase/tests/phase2_bookmark_cleanup.sql, app/lib/bookmarks/, app/lib/catalog/catalog_screen.dart and bookmark tests.
 - Pending intents: migration 20261021002402_phase3_pending_orders.sql, supabase/tests/phase3_pending_orders.sql, app/lib/commerce/ and order tests.
@@ -29,7 +33,7 @@ At the initial closed-foundation checkpoint: all nine hosted rollback suites pas
 
 Cleanup native acceptance is bounded to the retained administrator emulator session: installed/hash-matched artifact, dialog/cancel and confirmed zero-row result/refreshed list. Hosted bookmark count was zero before/after; no real saved data was removed. Populated/student/TalkBack/Huawei/signed-release and real parallel-transaction testing remain separate gates.
 
-No checkout, receipt storage, payment approval, refund transfer, bundle coverage, entitlements or protected learning is enabled. Pending means intent only, never paid/approved. Morning policy questions remain unanswered. Existing password protection warning and intentional private-table RLS INFO findings are tracked, not silently fixed through broader access or paid configuration.
+No checkout, receipt storage, payment approval, refund transfer, bundle coverage, entitlements or protected learning is enabled. Pending means intent only, never paid/approved. Morning policy questions and four instructor follow-ups are resolved in docs/MORNING_QUESTIONS.md; their implementation and acceptance must be checked separately. Existing password protection warning and intentional private-table RLS INFO findings are tracked, not silently fixed through broader access or paid configuration.
 
 ## Required report
 

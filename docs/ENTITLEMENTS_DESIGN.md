@@ -15,6 +15,18 @@
 - Content removal, grant revocation and purchase history are separate facts. Archiving/soft deletion must preserve orders, decisions and grants. Restoring course/session content returns it to draft; restoration alone never makes it student-available.
 - Roles remain **Admin** and **Student**. Admins currently perform instructor duties; no Instructor role or new authorization claim is added. Admin authoring privileges do not imply personal ownership in the student library.
 
+### Owner clarifications — 2026-10-21 (supersede older open-choice wording)
+
+- Reuse/reopen an existing unpaid request for the same target; block new purchases already fully covered by current valid access. Partial-overlap bundle treatment still needs explicit handling, not invented discounts.
+- Honor an existing request's immutable price snapshot. If content becomes unavailable before approval, reject and grant nothing; received funds require manually arranged/refund-recorded return, not a fabricated automatic transfer.
+- Refund access revocation, when explicitly selected, affects only that purchase source; independently valid coverage survives. Global content availability and required post-removal regrant barriers are unchanged.
+- Enabled server-authorized admins can access all learning content without purchasing or purchase approval. Implement this as an explicit administrative authorization branch, not grants/orders/enrollment or a disabled student paywall in Flutter. Preserve valid identity/admission, resource readiness/safety and student metadata privacy. Admin inspection of hidden content is not student publication/automatic restore.
+- Receiving details are instructor-specific: course instructor's phone for an InstaPay bank-account transfer and optionally Vodafone Cash at the same number, configured as InstaPay only or both. Existing instructor display text cannot establish financial identity. Trusted admin/instructor association, editing authority, recipient display details, cross-instructor bundle receiver and handling of destination revisions remain setup gates.
+
+Follow-up answers resolve that setup policy: one authenticated instructor/Admin per course, inherited by sessions; instructors edit their own receiving details. Bundles are restricted to selected sessions from that same course, using its sole instructor. Store phone and recipient name with enabled-method configuration, no bank-name field. Changed receiver details/assignment pause existing unpaid requests for instructor review before new instructions, preserving old instructions, recorded price and any received-money history. These require implementation; do not infer enabled checkout or split payments.
+
+The earlier tables/matrix describe proposed boundaries, not an implementation of these decisions. Existing creation grants remain closed. See REQUIREMENTS_CORRECTIONS.md and MORNING_QUESTIONS.md for the current authority.
+
 ## Separate grant, availability and delivery
 
 For a requested session, evaluate these dimensions independently using server state:

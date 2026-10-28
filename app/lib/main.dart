@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'appearance/theme_preferences.dart';
 import 'auth/auth_bootstrap.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_panel.dart';
@@ -13,12 +14,16 @@ import 'catalog/catalog_screen.dart';
 import 'bookmarks/bookmark_repository.dart';
 import 'bookmarks/supabase_bookmark_repository.dart';
 import 'content/course_covers.dart';
+import 'content/material_file_upload_repository.dart';
+import 'content/supabase_material_file_upload_repository.dart';
+import 'commerce/instructor_payment_repository.dart';
+import 'commerce/supabase_instructor_payment_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const config = AuthBuildConfig();
   if (config.absent) {
-    runApp(const SummitApp());
+    runApp(const SummitApp(themePreferenceStore: SecureThemePreferenceStore()));
     return;
   }
   try {
@@ -27,9 +32,16 @@ Future<void> main() async {
     final coverService = CourseCoverService(runtime.repository.client);
     runApp(
       SummitApp(
+        themePreferenceStore: const SecureThemePreferenceStore(),
         authController: runtime.controller,
+        instructorPaymentRepository: SupabaseInstructorPaymentRepository(
+          runtime.repository.client,
+        ),
         contentRepository: SupabaseContentRepository(runtime.repository.client),
         materialRepository: SupabaseMaterialRepository(
+          runtime.repository.client,
+        ),
+        materialFileUploadRepository: SupabaseMaterialFileUploadRepository(
           runtime.repository.client,
         ),
         catalogRepository: SupabaseCatalogRepository(runtime.repository.client),
@@ -53,7 +65,12 @@ Future<void> main() async {
       ),
     );
   } catch (_) {
-    runApp(const SummitApp(initializationFailed: true));
+    runApp(
+      const SummitApp(
+        initializationFailed: true,
+        themePreferenceStore: SecureThemePreferenceStore(),
+      ),
+    );
   }
 }
 
@@ -66,7 +83,10 @@ class SummitApp extends StatefulWidget {
     this.catalogRepository,
     this.catalogCoverLoader,
     this.bookmarkRepository,
+    this.instructorPaymentRepository,
+    this.materialFileUploadRepository,
     this.initializationFailed = false,
+    this.themePreferenceStore,
   });
   final AuthController? authController;
   final ContentRepository? contentRepository;
@@ -75,13 +95,54 @@ class SummitApp extends StatefulWidget {
   final CatalogCoverLoader? catalogCoverLoader;
   // Optional until the bookmark backend has been verified and activated.
   final BookmarkRepository? bookmarkRepository;
+  final InstructorPaymentRepository? instructorPaymentRepository;
+  // Optional for embedded/test instances; configured main uses the verified backend.
+  final MaterialFileUploadRepository? materialFileUploadRepository;
   final bool initializationFailed;
+  // Null keeps embedded/test instances in-memory; main supplies device storage.
+  final ThemePreferenceStore? themePreferenceStore;
   @override
   State<SummitApp> createState() => _SummitAppState();
 }
 
 class _SummitAppState extends State<SummitApp> {
-  ThemeMode mode = ThemeMode.system;
+  late ThemePreferenceController _appearance;
+
+  @override
+  void initState() {
+    super.initState();
+    _attachAppearance();
+  }
+
+  void _attachAppearance() {
+    _appearance = ThemePreferenceController(store: widget.themePreferenceStore)
+      ..addListener(_appearanceChanged);
+  }
+
+  void _appearanceChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant SummitApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(
+      oldWidget.themePreferenceStore,
+      widget.themePreferenceStore,
+    )) {
+      _appearance.removeListener(_appearanceChanged);
+      _appearance.dispose();
+      _attachAppearance();
+    }
+  }
+
+  @override
+  void dispose() {
+    _appearance.removeListener(_appearanceChanged);
+    _appearance.dispose();
+    super.dispose();
+  }
+
   ThemeData theme(Brightness brightness) => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
@@ -96,7 +157,7 @@ class _SummitAppState extends State<SummitApp> {
     debugShowCheckedModeBanner: false,
     theme: theme(Brightness.light),
     darkTheme: theme(Brightness.dark),
-    themeMode: mode,
+    themeMode: _appearance.mode,
     home: Builder(
       builder: (context) {
         return Scaffold(
@@ -105,8 +166,8 @@ class _SummitAppState extends State<SummitApp> {
             actions: [
               PopupMenuButton<ThemeMode>(
                 tooltip: 'Appearance',
-                initialValue: mode,
-                onSelected: (value) => setState(() => mode = value),
+                initialValue: _appearance.mode,
+                onSelected: _appearance.select,
                 itemBuilder: (context) => const [
                   PopupMenuItem(value: ThemeMode.system, child: Text('System')),
                   PopupMenuItem(value: ThemeMode.light, child: Text('Light')),
@@ -149,9 +210,13 @@ class _SummitAppState extends State<SummitApp> {
                         controller: widget.authController!,
                         contentRepository: widget.contentRepository,
                         materialRepository: widget.materialRepository,
+                        materialFileUploadRepository:
+                            widget.materialFileUploadRepository,
                         catalogRepository: widget.catalogRepository,
                         catalogCoverLoader: widget.catalogCoverLoader,
                         bookmarkRepository: widget.bookmarkRepository,
+                        instructorPaymentRepository:
+                            widget.instructorPaymentRepository,
                       )
                     else
                       Card(

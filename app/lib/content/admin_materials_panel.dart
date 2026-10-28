@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import '../auth/auth_controller.dart';
 import 'content_models.dart';
 import 'material_repository.dart';
+import 'material_file_upload_repository.dart';
+import 'material_file_selector.dart';
+import 'material_file_upload_panel.dart';
+import 'course_image_selector.dart';
 
 class AdminMaterialsPanel extends StatefulWidget {
   const AdminMaterialsPanel({
@@ -14,12 +18,16 @@ class AdminMaterialsPanel extends StatefulWidget {
     required this.auth,
     required this.repository,
     required this.onClose,
+    this.uploadRepository,
+    this.fileSelector,
   });
   final Course course;
   final CourseSession session;
   final AuthController auth;
   final MaterialRepository repository;
   final VoidCallback onClose;
+  final MaterialFileUploadRepository? uploadRepository;
+  final MaterialFileSelector? fileSelector;
   @override
   State<AdminMaterialsPanel> createState() => _AdminMaterialsPanelState();
 }
@@ -33,6 +41,8 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
   GlobalKey<FormState> _form = GlobalKey<FormState>();
   List<MaterialDescriptor> _rows = [];
   MaterialDescriptor? _expected;
+  MaterialDescriptor? _uploadMaterial;
+  final MaterialFileSelector _systemFileSelector = SystemMaterialFileSelector();
   MaterialKind _kind = MaterialKind.video;
   ContentStatus _status = ContentStatus.draft;
   String? _actor, _device, _error, _notice;
@@ -111,7 +121,9 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
     if (oldWidget.auth != widget.auth ||
         oldWidget.repository != widget.repository ||
         oldWidget.course != widget.course ||
-        oldWidget.session != widget.session) {
+        oldWidget.session != widget.session ||
+        oldWidget.uploadRepository != widget.uploadRepository ||
+        oldWidget.fileSelector != widget.fileSelector) {
       oldWidget.auth.removeListener(_authChanged);
       widget.auth.addListener(_authChanged);
       ++_epoch;
@@ -132,6 +144,7 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
   }
 
   void _clearEditor() {
+    _uploadMaterial = null;
     _settingFields = true;
     for (final controller in _controllers) {
       controller.clear();
@@ -189,8 +202,38 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
 
   bool _current(int epoch) => _check() && epoch == _epoch;
 
+  VoidCallback? _uploadAction(MaterialDescriptor row) {
+    if (!_writable ||
+        _uploadMaterial != null ||
+        row.isDeleted ||
+        widget.uploadRepository == null ||
+        row.sessionId.toLowerCase() != widget.session.id.toLowerCase() ||
+        (row.kind != MaterialKind.pdf && row.kind != MaterialKind.file)) {
+      return null;
+    }
+    final epoch = _epoch;
+    final repository = widget.repository;
+    final uploads = widget.uploadRepository;
+    final course = widget.course, session = widget.session;
+    return () {
+      if (!mounted ||
+          epoch != _epoch ||
+          _uploadMaterial != null ||
+          !_writable ||
+          !identical(repository, widget.repository) ||
+          !identical(uploads, widget.uploadRepository) ||
+          !identical(course, widget.course) ||
+          !identical(session, widget.session) ||
+          !_rows.contains(row)) {
+        return;
+      }
+      setState(() => _uploadMaterial = row);
+    };
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (CourseImageSelection.active(widget.auth)) return;
     _foreground = state == AppLifecycleState.resumed;
     if (!_foreground) _invalidate();
   }
@@ -640,8 +683,10 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
         if (_kind == MaterialKind.video ||
             _kind == MaterialKind.pdf ||
             _kind == MaterialKind.file)
-          const Text(
-            'Media placeholder only. Uploads and student delivery are unavailable; this kind cannot publish.',
+          Text(
+            widget.uploadRepository != null && _kind != MaterialKind.video
+                ? 'Save this draft, then choose Upload file on its material card. Uploaded files await trusted validation and cannot publish yet.'
+                : 'Media placeholder only. Uploads and student delivery are unavailable; this kind cannot publish.',
           ),
         if (_expected == null)
           const Text('New materials save as draft.')
@@ -690,7 +735,7 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
   Widget build(BuildContext context) => PopScope(
     canPop: false,
     onPopInvokedWithResult: (didPop, _) {
-      if (!didPop) _close();
+      if (!didPop && _uploadMaterial == null) _close();
     },
     child: !_identityMatches
         ? Center(
@@ -719,6 +764,17 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
                 ),
               ],
             ),
+          )
+        : _uploadMaterial != null && widget.uploadRepository != null
+        ? MaterialFileUploadPanel(
+            auth: widget.auth,
+            material: _uploadMaterial!,
+            repository: widget.uploadRepository!,
+            selector: widget.fileSelector ?? _systemFileSelector,
+            onClose: () {
+              setState(() => _uploadMaterial = null);
+              _load();
+            },
           )
         : SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -806,6 +862,13 @@ class _AdminMaterialsPanelState extends State<AdminMaterialsPanel>
                               spacing: 8,
                               runSpacing: 4,
                               children: [
+                                if (widget.uploadRepository != null &&
+                                    (row.kind == MaterialKind.pdf ||
+                                        row.kind == MaterialKind.file))
+                                  TextButton(
+                                    onPressed: _uploadAction(row),
+                                    child: const Text('Upload file'),
+                                  ),
                                 TextButton(
                                   onPressed: !_writable || row.isDeleted
                                       ? null

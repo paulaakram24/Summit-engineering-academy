@@ -6,9 +6,12 @@ import '../content/content_repository.dart';
 import '../content/admin_content_screen.dart';
 import '../content/course_image_selector.dart';
 import '../content/material_repository.dart';
+import '../content/material_file_upload_repository.dart';
 import '../catalog/catalog_repository.dart';
 import '../catalog/catalog_screen.dart';
 import '../bookmarks/bookmark_repository.dart';
+import '../commerce/instructor_payment_repository.dart';
+import '../commerce/instructor_payment_profile_panel.dart';
 
 import 'auth_controller.dart';
 import 'auth_repository.dart';
@@ -22,6 +25,8 @@ class AuthPanel extends StatefulWidget {
     this.catalogRepository,
     this.catalogCoverLoader,
     this.bookmarkRepository,
+    this.instructorPaymentRepository,
+    this.materialFileUploadRepository,
   });
   final AuthController controller;
   final ContentRepository? contentRepository;
@@ -29,6 +34,8 @@ class AuthPanel extends StatefulWidget {
   final CatalogRepository? catalogRepository;
   final CatalogCoverLoader? catalogCoverLoader;
   final BookmarkRepository? bookmarkRepository;
+  final InstructorPaymentRepository? instructorPaymentRepository;
+  final MaterialFileUploadRepository? materialFileUploadRepository;
   @override
   State<AuthPanel> createState() => _AuthPanelState();
 }
@@ -45,19 +52,56 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
   String _mode = 'login';
   bool _editing = false;
   AuthStage? _lastStage;
+  String? _displayedRecoveryEmail;
+  bool _backgrounded = false;
   AuthController get auth => widget.controller;
+
+  String? get _recoveryEmail {
+    try {
+      if (!auth.repository.hasSession) return null;
+      final email = auth.repository.email?.trim();
+      return email != null &&
+              email.length <= 254 &&
+              RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
+          ? email
+          : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    _backgrounded =
+        lifecycle == AppLifecycleState.hidden ||
+        lifecycle == AppLifecycleState.paused ||
+        lifecycle == AppLifecycleState.detached;
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (CourseImageSelection.active(auth)) return;
+    final enteringDetails =
+        auth.stage == AuthStage.completeProfile ||
+        auth.stage == AuthStage.signedOut ||
+        auth.stage == AuthStage.verification ||
+        auth.stage == AuthStage.recovery;
+    if (state == AppLifecycleState.inactive && enteringDetails) {
+      // Android can briefly lose window focus when showing the keyboard.
+      // Keep credential/profile forms stable. Protected workspaces retain
+      // their stricter focus-loss and repeated-resume admission checks.
+      return;
+    }
     if (state == AppLifecycleState.resumed) {
-      unawaited(auth.checkAccess());
-    } else {
+      if (_backgrounded || !enteringDetails) {
+        _backgrounded = false;
+        unawaited(auth.checkAccess());
+      }
+    } else if (state != AppLifecycleState.resumed && !_backgrounded) {
+      _backgrounded = true;
       auth.suspend();
     }
   }
@@ -190,6 +234,14 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: auth,
     builder: (context, _) {
+      final recoveryEmail = auth.stage == AuthStage.recovery
+          ? _recoveryEmail
+          : null;
+      if (_displayedRecoveryEmail != recoveryEmail) {
+        _password.clear();
+        _confirm.clear();
+        _displayedRecoveryEmail = recoveryEmail;
+      }
       if (_lastStage != auth.stage) {
         if (auth.stage == AuthStage.recovery ||
             auth.stage == AuthStage.signedOut) {
@@ -223,18 +275,33 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
         case AuthStage.recovery:
           title = 'Choose a new password';
           children.addAll([
-            _passwordField(newPassword: true),
-            _field(
-              'Confirm password',
-              _confirm,
-              password: true,
-              validator: (value) =>
-                  value == _password.text ? null : 'Passwords do not match.',
-            ),
-            _button(
-              'Update password',
-              () => auth.changePassword(_password.text),
-            ),
+            if (recoveryEmail == null)
+              const Text(
+                'Recovery account could not be verified. Cancel and request a new reset link.',
+              )
+            else ...[
+              Text('Resetting password for $recoveryEmail'),
+              const SizedBox(height: 16),
+              _passwordField(newPassword: true),
+              _field(
+                'Confirm password',
+                _confirm,
+                password: true,
+                validator: (value) =>
+                    value == _password.text ? null : 'Passwords do not match.',
+              ),
+              _button('Update password', () async {
+                // Never submit values retained for a different displayed account.
+                if (_recoveryEmail != recoveryEmail) {
+                  setState(() {
+                    _password.clear();
+                    _confirm.clear();
+                  });
+                  return;
+                }
+                await auth.changePassword(_password.text);
+              }),
+            ],
             _button('Cancel and sign out', auth.logout, validate: false),
           ]);
         case AuthStage.verification:
@@ -347,12 +414,42 @@ class _AuthPanelState extends State<AuthPanel> with WidgetsBindingObserver {
                                 repository: widget.contentRepository!,
                                 authController: auth,
                                 materialRepository: widget.materialRepository,
+                                materialFileUploadRepository:
+                                    widget.materialFileUploadRepository,
+                                instructorPaymentRepository:
+                                    widget.instructorPaymentRepository,
                               ),
                             ),
                           );
                         },
                   icon: const Icon(Icons.library_books),
                   label: const Text('Manage courses'),
+                ),
+              if (auth.access!.role == 'admin' &&
+                  widget.instructorPaymentRepository != null)
+                FilledButton.icon(
+                  onPressed: auth.busy
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (routeContext) => Scaffold(
+                              appBar: AppBar(
+                                title: const Text('Receiving payment details'),
+                              ),
+                              body: SafeArea(
+                                child: InstructorPaymentProfilePanel(
+                                  auth: auth,
+                                  repository:
+                                      widget.instructorPaymentRepository!,
+                                  onClose: () =>
+                                      Navigator.of(routeContext).pop(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                  icon: const Icon(Icons.account_balance_outlined),
+                  label: const Text('Receiving payment details'),
                 ),
               TextButton(
                 onPressed: () => setState(() {

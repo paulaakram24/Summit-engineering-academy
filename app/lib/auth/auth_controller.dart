@@ -246,6 +246,7 @@ class AuthController extends ChangeNotifier {
     'weak_password' => 'Choose a stronger password.',
     'storage' => 'Secure storage is unavailable. Restart the app to try again.',
     'browser' => 'Could not open the browser. Please try again.',
+    'callback' => 'This sign-in link could not be completed. If your email is already confirmed, sign in with your email and password. Otherwise, start sign-in or password reset again.',
     _ =>
       'Unable to verify account access. Check your connection and try again.',
   };

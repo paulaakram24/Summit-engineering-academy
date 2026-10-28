@@ -2,6 +2,8 @@
 
 This slice prepares private data contracts only. Creation stays **closed to client roles** until remaining business decisions and payment prerequisites are resolved. It does not enable checkout, transfer instructions, receipt submission, approval, refunds, grants or protected learning. Course/session intents are an initial engineering slice; editable bundle integration remains required later.
 
+Owner resolved the main morning rules on 2026-10-21: reuse unpaid target requests, block targets already covered by valid access, honor existing price snapshots, reject unavailable targets before approval with manual refund handling for received funds, and source-only refund revocation. Admin learning access needs no purchase. Receiving phone/method configuration is per assigned course instructor, not global; instructor chooses InstaPay bank-account transfer only or that plus Vodafone Cash at the same number. These are new requirements, not behavior delivered by the staged migration below. Creation remains closed until repeat-request/access checks, trusted instructor association, versioned receiving details and payment prerequisites are implemented/tested.
+
 ## Frozen API projection
 
 An order intent has exactly: `id`, `kind`, `course_id`, `session_id`, `course_title_snapshot`, `session_title_snapshot`, `price_piasters`, `currency`, `state`, `created_at`.
@@ -41,3 +43,5 @@ Require exact-count rollback reports, fixture cleanup, authorization/forged role
 Before enabling creation or checkout, resolve MORNING_QUESTIONS.md and obtain payment destinations at 3.2. Receipt storage, verification, bundle selection, refunds and entitlement integration need their own reviewed milestones. Keep production signing/distribution and store/iPhone gates separate.
 
 Independent audit instructions are in PHASE3_STAGED_AUDIT_HANDOFF.md. This prepared handoff is not an executed Claude Code audit.
+
+The separate instructor-payment setup foundation is now development-deployed and tested; see INSTRUCTOR_PAYMENTS.md. It does not enable order creation, enforce unpaid-request reuse, issue destination snapshots or implement pause/review transitions. The existing ten-field order projection remains unchanged and contains no receiving data.

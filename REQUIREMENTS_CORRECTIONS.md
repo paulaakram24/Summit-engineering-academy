@@ -2,6 +2,24 @@
 
 These corrections take precedence over omissions in earlier generated planning documents.
 
+## Owner decisions — 2026-10-21
+
+- Follow-up setup decisions are resolved: each course has one assigned authenticated instructor/Admin account; sessions inherit that assignment and instructors edit their own receiving details. Bundles contain only sessions from the same course, so they inherit that course's single instructor/receiver; cross-course/multi-instructor bundles are not supported.
+- Receiving configuration contains only phone number and recipient name, plus the enabled-method choice. Do not request/store a bank-name field, account credentials or a bank account number. InstaPay refers to the instructor's bank-account transfer route at their configured phone, not an in-app banking integration.
+- A receiving-number/name/method or assigned-instructor change must pause existing unpaid requests for instructor review before new instructions are shown. Preserve issued destination history, original request price and any transfers already sent; never silently redirect or infer that funds returned. This review transition must exist before enabling checkout/destination updates against real issued requests.
+
+- Reopen/reuse the student's existing unpaid request for the same target instead of creating another. Block a new purchase when current valid access already covers that target. Do not infer partial-overlap bundle pricing or duplicate requests from operation idempotency alone.
+- Honor the server-recorded price of an existing request if the live catalog price changes. Preserve its immutable snapshot.
+- If content becomes unavailable before approval, reject the request and grant no access. If funds were received, arrange and record a manual refund; rejection is not proof that money was returned.
+- Enabled server-authorized admins can access all learning content without buying it or obtaining purchase approval. This is role-based administrative access, not fake purchase history, student enrollment or a self-approved order. Keep authentication/admission, resource readiness/safety and student catalog privacy enforced; content inspection remains distinct from publishing or undeleting it.
+- If a refund decision explicitly revokes access, revoke only that purchase's access source; preserve other independently valid grants. Availability and post-removal regrant barriers still apply.
+- Payment destinations belong to the course's instructor, not one global academy receiver. The instructor configures their receiving phone number for an InstaPay bank-account transfer, and the same number for Vodafone Cash when supported. Allowed instructor configurations are InstaPay only or InstaPay plus Vodafone Cash; Vodafone-Cash-only is not requested. Show students only enabled methods.
+- Instructors currently act as admins; this does not introduce a separate Instructor role. Existing free-text instructor display names cannot establish a trusted receiving account. Enforce the authenticated course assignment, own-only receiving edits and same-course bundle rules above before enabling transfer instructions. Never request bank credentials, PINs or OTPs.
+
+These decisions authorize requirements/implementation planning, not an automatic change to currently closed order-creation privileges or a new push.
+
+## Prior decisions and retained requirements
+
 - Flutter/Dart replaces Expo/React Native. Android work is authorized now; iOS testing is a later gate requiring macOS access.
 - Owner selected direct Android installation for the initial release (2026-10-20). Retain mobile Student/Admin experiences and manual InstaPay/Vodafone Cash payments; Google Play/App Store publication and iPhone distribution are deferred, not cancelled. Production distribution requires a signed release APK, protected signing credentials, verified download/update process and owner release approval. A debug APK or this decision alone does not authorize public release.
 - Owner reconfirmed the payment flow: student selects InstaPay or Vodafone Cash, transfers the server-priced EGP amount and uploads a transaction screenshot; request remains pending until an admin checks the evidence against actual received funds and approves/rejects it. Screenshot submission or method selection alone never grants access. Destination details remain deferred to milestone 3.2.

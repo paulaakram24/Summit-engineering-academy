@@ -16,6 +16,12 @@ Students can buy an individual session, an editable admin/instructor-selected se
 
 ## Payments
 
+Owner clarification 2026-10-21: reuse an existing unpaid request for the same target, block purchases already covered by valid access, honor recorded request prices, and reject content unavailable before approval (manually refund received funds, with separate return records). Source-only revocation applies when an explicit refund access decision is revoke; independent valid grants survive. Admins access all learning content through server-controlled administrative authorization, without purchases/approvals or fabricated student ownership. Retain admission, lifecycle/privacy and resource-readiness checks.
+
+Payment receiving details are per assigned course instructor: a configured phone number receiving an InstaPay bank-account transfer and, optionally, Vodafone Cash at the same number. Each instructor chooses InstaPay only or both methods. Do not use a global academy receiver, infer financial identity from a free-text instructor name, invent receiving details or expose unconfigured methods. Resolve instructor account association, destination edit authority, recipient display details and cross-instructor bundle payee before enabling payment instructions.
+
+Resolved follow-up: assign one authenticated instructor/Admin per course; sessions inherit it and instructors edit their own receiving profiles. Bundles must stay within that same course and use its instructor, not cross-course recipients or split transfers. Store only number, recipient name and method selection—no bank-name field. Changing receiving details or course receiver pauses existing unpaid requests for instructor review before new instructions; preserve destination history, recorded price and prior transfers. Implementation/tests are required; answers alone do not enable the staged order API.
+
 Initial distribution is direct Android installation, selected by the owner on 2026-10-20. Defer Google Play/App Store submission and public iPhone release; revalidate their billing requirements before a later store build. Do not introduce store billing or a website without a new scope decision. Direct production distribution still requires a signed release artifact, secure key handling, verified download/update procedures and explicit release approval; never publish the debug APK as production.
 
 Implement manual InstaPay and Vodafone Cash payment flows:

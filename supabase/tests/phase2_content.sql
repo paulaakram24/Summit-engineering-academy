@@ -78,7 +78,7 @@ SELECT pg_temp.check_true('content tables RLS enabled', $test$SELECT count(*)=2 
 
 SELECT pg_temp.check_true('three existing material buckets remain private', $test$SELECT count(*)=3 AND bool_and(NOT public) FROM storage.buckets WHERE id IN ('course-materials','payment-receipts','assignment-submissions')$test$);
 
-SELECT pg_temp.check_true('storage object policies allow only named cover policies', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete')$test$);
+SELECT pg_temp.check_true('storage object policies allow only named cover policies', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete','material_upload_quarantine_insert')$test$);
 
 SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claims = '{"role":"authenticated","sub":"f2c0e100-0000-4000-8000-000000000001","session_id":"f2c0e100-0000-4000-8000-000000000101","user_metadata":{"role":"admin","is_admin":true}}';
@@ -466,7 +466,7 @@ UPDATE private.account_access SET active_session_id='f2c0e100-0000-4000-8000-000
 
 SELECT pg_temp.check_true('denied sessions preserve all fixture content and audit', $test$SELECT (SELECT count(*) FROM public.courses WHERE id IN (SELECT id FROM pg_temp.phase2_ids WHERE kind='course'))=4 AND (SELECT count(*) FROM public.course_sessions WHERE id IN (SELECT id FROM pg_temp.phase2_ids WHERE kind='session'))=7 AND (SELECT title FROM public.courses WHERE id=(SELECT id FROM pg_temp.phase2_ids WHERE key='cp'))='Edited course' AND (SELECT title FROM public.course_sessions WHERE id=(SELECT id FROM pg_temp.phase2_ids WHERE key='sp'))='Edited session' AND (SELECT count(*) FROM private.security_events WHERE actor_id='f2c0e100-0000-4000-8000-000000000001' AND action LIKE 'content_%')=21 AND (SELECT count(*) FROM private.security_events WHERE actor_id='f2c0e100-0000-4000-8000-000000000002' AND action LIKE 'content_%')=0$test$);
 
-SELECT pg_temp.check_true('storage policies remain scoped after content regression', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete')$test$);
+SELECT pg_temp.check_true('storage policies remain scoped after content regression', $test$SELECT count(*)=0 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname NOT IN ('course_covers_read','course_covers_insert','course_covers_delete','material_upload_quarantine_insert')$test$);
 
 -- Report BEFORE rollback; require this JSON result, not absence of an error.
 SELECT jsonb_build_object('status','PASS','passed',count(*),'expected',130,'tests',jsonb_agg(jsonb_build_object('name',test_name,'outcome',outcome) ORDER BY test_name)) AS phase2_test_report FROM pg_temp.phase2_results;

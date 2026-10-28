@@ -1,0 +1,24 @@
+name: Offline material observation checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  observation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --version
+      - run: node --check tools/material-validation/observation.mjs
+      - run: node --check tools/material-validation/observation.test.mjs
+      - run: node --test tools/material-validation/observation.test.mjs

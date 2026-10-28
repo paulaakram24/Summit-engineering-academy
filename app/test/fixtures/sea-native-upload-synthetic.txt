@@ -1,0 +1,3 @@
+SEA SYNTHETIC UPLOAD ACCEPTANCE FIXTURE
+No student data, teaching content, credentials or payment information.
+Used only to verify native selection, confirmation cancellation and local discard.
